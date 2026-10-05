@@ -75,12 +75,12 @@
           <span v-else>Editar enlaces</span>
         </v-card-title>
         <v-card-text>
-          <v-text-field
+          <v-file-input
             v-if="editMode === 'avatar'"
-            v-model="avatarUrlInput"
-            label="URL de imagen (.png o .jpg)"
-            placeholder="https://images.pexels.com/..."
-            clearable
+            v-model="avatarFile"
+            label="Selecciona una imagen"
+            accept="image/png, image/jpeg"
+            prepend-icon="mdi-camera"
           />
           <v-textarea
             v-else-if="editMode === 'bio'"
@@ -139,7 +139,7 @@ const loading = ref(true)
 
 const showEditDialog = ref(false)
 const editMode = ref('avatar')
-const avatarUrlInput = ref('')
+const avatarFile = ref(null)
 const bioInput = ref('')
 const tagsInput = ref([])     // array de strings para v-combobox
 const linkLabelInput = ref('')
@@ -149,7 +149,7 @@ const errorMsg = ref('')
 
 function openAvatarDialog() {
   editMode.value = 'avatar'
-  avatarUrlInput.value = authStore.profile?.avatar_url ?? ''
+  avatarFile.value = null
   errorMsg.value = ''
   showEditDialog.value = true
 }
@@ -174,10 +174,6 @@ function openLinksDialog() {
   linkUrlInput.value = ''
   errorMsg.value = ''
   showEditDialog.value = true
-}
-
-function isValidImageUrl(url) {
-  return /^https?:\/\/.+\.(png|jpg|jpeg)$/i.test(url.trim())
 }
 
 function isValidUrl(url) {
@@ -208,21 +204,37 @@ async function saveEdit() {
   errorMsg.value = ''
 
   if (editMode.value === 'avatar') {
-    if (avatarUrlInput.value && !isValidImageUrl(avatarUrlInput.value)) {
-      errorMsg.value = 'La URL debe terminar en .png, .jpg o .jpeg'
+    if (!avatarFile.value) {
+      errorMsg.value = 'Selecciona una imagen'
       return
     }
     saving.value = true
+
+    const file = avatarFile.value
+    const path = `${authStore.user.id}/${Date.now()}-${file.name}`
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file)
+
+    if (uploadError) {
+      saving.value = false
+      errorMsg.value = uploadError.message
+      return
+    }
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+
     const { error } = await supabase
       .from('profiles')
-      .update({ avatar_url: avatarUrlInput.value || null })
+      .update({ avatar_url: data.publicUrl })
       .eq('id', authStore.user.id)
+
     saving.value = false
     if (error) { errorMsg.value = error.message; return }
     await authStore.fetchProfile()
     showEditDialog.value = false
     return
-  }
+  } 
 
   if (editMode.value === 'bio') {
     saving.value = true
