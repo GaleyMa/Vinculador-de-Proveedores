@@ -17,6 +17,7 @@
       <RouterLink class="text-decoration-none" :to="`/usuario/${post.author_id}`">
         {{ post.profiles?.full_name }}
       </RouterLink>
+      <span v-if="roleLabel"> - {{ roleLabel }}</span>
     </v-card-subtitle>
 
     <v-card-text>
@@ -72,6 +73,10 @@
   const authStore = useAuthStore()
   const route = useRoute()
   const visibleTags = computed(() => (props.post.post_tags ?? []).filter(t => t.tags))
+  const roleLabel = computed(() => {
+  const role = props.post.profiles?.role
+  return role ? role.charAt(0).toUpperCase() + role.slice(1) : ''
+})
 
   function tagLink(tag) {
     const q = ['/', '/feed'].includes(route.path) ? searchParam(route.query.q) : ''
