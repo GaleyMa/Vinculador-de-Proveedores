@@ -8,7 +8,7 @@ export const POSTS_PAGE_SIZE = 20
 export async function searchPosts(client, { text = '', tag = '', role = '', page = 1, pageSize = POSTS_PAGE_SIZE, signal } = {}) {
   text = searchParam(text)
   tag = searchParam(tag)
-  const columns = ['*',role ? 'profiles!inner(full_name, role)' : 'profiles(full_name)','post_tags(tags(id, name))',]
+  const columns = ['*',role ? 'profiles!inner(full_name, role)' : 'profiles(full_name, role)','post_tags(tags(id, name))',]
   if (text) {
     columns.push('matching_tags:post_tags(tags!inner(name))')
   }
@@ -30,7 +30,7 @@ export async function searchPosts(client, { text = '', tag = '', role = '', page
     query = query.eq('selected_tags.tags.name', tag)
   }
   if (role) {
-    query = query.eq('profiles.role', role)
+    query = query.in('profiles.role', [role, 'socio'])
   }
 
   const start = (page - 1) * pageSize

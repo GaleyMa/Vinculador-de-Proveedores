@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('auth', {
     // Rol de los posts que se muestran en el feed
     feedRole: (state) => {
       const myRole = state.profile?.role
-      if (!myRole) return ''
+      if (!myRole || myRole === 'socio') return ''
       const opposite = myRole === 'cliente' ? 'proveedor' : 'cliente'
       return state.swapView ? myRole : opposite
     },

@@ -47,6 +47,7 @@
         </v-text-field>
 
         <v-switch
+          v-if="authStore.profile?.role !== 'socio'"
           v-model="authStore.swapView"
           :aria-label="`Invertir rol. Viendo: ${feedLabel}`"
           class="role-switch"

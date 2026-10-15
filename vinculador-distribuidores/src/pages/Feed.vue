@@ -1,9 +1,11 @@
 <template>
   <v-container max-width="700">
     <h1 class="text-h5 mb-3">
-        {{ hasFilters ? 'Resultados de búsqueda'
-        : authStore.feedRole === 'proveedor' ? 'Publicaciones de proveedores' : 'Publicaciones de clientes' }}
-    </h1>
+      {{ hasFilters ? 'Resultados de búsqueda'
+        : authStore.profile?.role === 'socio' ? 'Todas las publicaciones'
+        : authStore.feedRole === 'proveedor' ? 'Publicaciones de proveedores'
+        : 'Publicaciones de clientes' }}
+  </h1>
 
     <div v-if="hasFilters" class="d-flex flex-wrap align-center ga-2 mb-4">
       <v-chip v-if="text" :aria-label="`Texto buscado: ${text}`" closable @click:close="removeFilter('q')">
