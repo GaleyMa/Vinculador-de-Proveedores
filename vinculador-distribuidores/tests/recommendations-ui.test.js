@@ -6,7 +6,16 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { renderToString } from 'vue/server-renderer'
 
 test('Recomendaciones: estado del feed y componentes Vue reales', async t => {
-  const server = await createServer({ server: { middlewareMode: true, hmr: false, watch: null }, ssr: { noExternal: ['vuetify'] } })
+  const server = await createServer({
+    // The suite stubs RPC calls; never load real Supabase settings for this test.
+    envFile: false,
+    define: {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify('http://127.0.0.1:54321'),
+      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify('recommendations-test-key'),
+    },
+    server: { middlewareMode: true, hmr: false, watch: null },
+    ssr: { noExternal: ['vuetify'] },
+  })
   try {
     const { createPinia, setActivePinia } = await server.ssrLoadModule('pinia')
     const { createVuetify } = await server.ssrLoadModule('vuetify')
