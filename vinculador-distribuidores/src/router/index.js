@@ -6,18 +6,20 @@
 
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '@/pages/Login.vue'
-import Register from '@/pages/Register.vue'
-import Profile from '@/pages/Profile.vue'
-import Feed from '@/pages/Feed.vue'
+import { routeAccess } from '@/lib/routeAccess'
 import CreatePost from '@/pages/CreatePost.vue'
+import Feed from '@/pages/Feed.vue'
+import Login from '@/pages/Login.vue'
+import Profile from '@/pages/Profile.vue'
+import Register from '@/pages/Register.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      component: Feed,
+      component: () => import('@/pages/Home.vue'),
       meta: { guestOk: true }
     },
     {
@@ -83,12 +85,12 @@ const router = createRouter({
     },
   ],
 })
-
-import { useAuthStore } from '@/stores/auth'
-import { routeAccess } from '@/lib/routeAccess'
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
-  if (authStore.loading) await authStore.init()
+  if (authStore.loading) {
+    try { await authStore.init() }
+    catch { return to.path === '/' ? true : '/' }
+  }
 
   return routeAccess(authStore, to)
 })

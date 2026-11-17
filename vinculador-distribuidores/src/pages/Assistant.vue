@@ -1,38 +1,47 @@
 <template>
-  <v-container max-width="900">
-    <h1 class="text-h4 mb-2">Asistente de proveedores</h1>
-    <p class="mb-4">Busca por palabras clave, por ejemplo: cajas cartón o mantenimiento industrial.</p>
+  <v-container class="assistant-page" max-width="1040">
+    <p class="eyebrow">BÚSQUEDA CON AYUDA</p><h1 class="page-title mb-2">Asistente de proveedores</h1>
+    <p class="mb-4">Cuéntanos qué necesitas. Buscaremos ofertas y, si lo eliges, opciones fuera de SunFinder.</p>
 
-    <v-form :disabled="loading" @submit.prevent="search">
-      <v-text-field v-model="query" counter="300" label="¿Qué necesitas encontrar?" maxlength="300" />
+    <v-form class="assistant-form" :disabled="loading" @submit.prevent="search">
+      <v-text-field
+        v-model="query"
+        counter="300"
+        label="¿Qué necesitas encontrar?"
+        maxlength="300"
+        placeholder="Ej. cajas de cartón para mi empresa"
+      />
+
       <OfferFilters v-model:nature="nature" v-model:sector-id="sectorId" />
-      <v-checkbox v-model="useAI" hide-details label="Generar un resumen con Gemini" />
-      <v-checkbox v-model="useWeb" hide-details label="Buscar también proveedores en la web con Tavily" />
-      <p v-if="useAI || useWeb" class="text-caption mb-3">Se enviarán tu consulta y filtros a los servicios seleccionados. Gemini también recibirá las descripciones de los resultados. No incluyas información confidencial.</p>
+      <v-checkbox v-model="useAI" hide-details label="Ayudarme a comparar los resultados" />
+      <v-checkbox v-model="useWeb" hide-details label="Incluir opciones de la web" />
+      <p v-if="useAI || useWeb" class="text-caption mb-3">Al activar la ayuda se enviará tu consulta a Gemini; al incluir la web, también a Tavily. El resumen usa descripciones de resultados. Evita compartir datos confidenciales.</p>
       <v-btn class="my-3" color="primary" :loading="loading" type="submit">Buscar proveedores</v-btn>
     </v-form>
 
     <v-alert v-if="error" class="mb-4" role="alert" type="error">{{ error }}</v-alert>
     <v-alert v-for="warning in warnings" :key="warning" class="mb-3" type="warning">{{ warning }}</v-alert>
 
-    <section v-if="summary" aria-label="Resumen del asistente" class="mb-5">
+    <section v-if="summary" aria-label="Resumen del asistente" class="assistant-summary mb-5">
       <h2 class="text-h6">Resumen del asistente</h2>
       <p class="summary">{{ summary }}</p>
       <p class="text-caption mt-2">Resumen generado por IA. Confirma los detalles en las fuentes.</p>
     </section>
 
+    <div v-if="loading" class="assistant-loading" role="status"><v-progress-circular indeterminate size="22" /><span>Estamos buscando opciones para tu empresa…</span></div>
+
     <template v-if="searched">
-      <h2 class="text-h6 mb-3">Ofertas dentro de Sun Finder</h2>
+      <h2 class="text-h6 mb-3">Ofertas en SunFinder</h2>
       <v-alert v-if="offers.length === 0" class="mb-4" type="info">No encontramos ofertas clasificadas con esas palabras y filtros. Prueba menos palabras o un rubro diferente.</v-alert>
 
       <div v-for="(offer, index) in offers" :key="offer.id">
-        <p class="text-caption">O{{ index + 1 }} · Oferta interna</p>
+        <p class="text-caption">Opción {{ index + 1 }} · En SunFinder</p>
         <PostCard :post="offer" @deleted="offers = offers.filter(item => item.id !== $event)" />
       </div>
 
       <template v-if="webRequested">
         <h2 class="text-h6 my-3">Resultados de la web</h2>
-        <p class="text-caption mb-3">Fuentes externas; no son perfiles registrados ni proveedores verificados por Sun Finder.</p>
+        <p class="text-caption mb-3">Fuentes externas; no son perfiles registrados ni proveedores verificados por SunFinder.</p>
         <v-alert v-if="web.length === 0" class="mb-3" type="info">No hay resultados web disponibles para esta consulta.</v-alert>
         <WebResultCard v-for="result in web" :key="result.url" :result="result" />
       </template>

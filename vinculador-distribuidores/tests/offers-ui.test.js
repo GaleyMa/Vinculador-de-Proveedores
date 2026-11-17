@@ -54,8 +54,8 @@ test('Pantallas Vue y sesiones: clasificación, fuentes y recuperación de acces
       const {pinia} = setup('cliente')
       const html = await render(Assistant,{},pinia)
       assert.match(html,/Asistente de proveedores/)
-      assert.match(html,/Gemini/)
-      assert.match(html,/Tavily/)
+      assert.match(html,/Ayudarme a comparar los resultados/)
+      assert.match(html,/Incluir opciones de la web/)
       assert.doesNotMatch(html,/checked=""/)
     })
     await t.test('Invitado no ve publicar ni asistente en la navegación', async () => {

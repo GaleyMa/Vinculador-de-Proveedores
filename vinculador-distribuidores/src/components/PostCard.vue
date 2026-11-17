@@ -1,90 +1,91 @@
 <template>
-  <v-card v-if="!removed" class="mb-4">
+  <v-card v-if="!removed" class="opportunity-card mb-5">
+    <div class="opportunity-company">
+      <v-avatar color="primary" size="42" variant="tonal"><v-img v-if="post.profiles?.avatar_url" alt="" :src="post.profiles.avatar_url" /><span v-else>{{ companyInitials }}</span></v-avatar>
+      <div class="company-copy"><RouterLink :to="`/usuario/${post.author_id}`">{{ post.profiles?.full_name || 'Empresa' }}</RouterLink><p>{{ roleLabel || 'Perfil empresarial' }}</p></div>
+      <v-chip :color="offerNature || post.profiles?.role === 'proveedor' ? 'secondary' : 'primary'" size="small" variant="tonal">{{ offerNature || post.profiles?.role === 'proveedor' ? 'Ofrece' : 'Publicación' }}</v-chip>
 
-    <v-tooltip v-if="affinity !== null" location="bottom" max-width="260" open-on-click>
-      <template #activator="{ props: tooltipProps }">
-        <v-chip
-          v-bind="tooltipProps"
-          :aria-label="`Afinidad con tu perfil: ${affinityLabel}`"
-          class="affinity-badge"
-          :color="affinityColor"
-          size="small"
-          tabindex="0"
-          variant="tonal"
-        >
-          {{ affinityLabel }}
-        </v-chip>
-      </template>
-
-      <div class="text-body-2 font-weight-bold mb-2">Puntaje por etiqueta</div>
-      <div v-if="tagScores.length === 0">Este post no tiene etiquetas.</div>
-
-      <div v-for="t in tagScores" :key="t.id" class="d-flex justify-space-between ga-4">
-        <span>{{ t.name }}</span>
-        <span class="font-weight-bold" :class="scoreClass(t.score)">{{ scoreLabel(t.score) }}</span>
-      </div>
-    </v-tooltip>
-    
-    <v-card-title class="d-flex align-center justify-space-between" :class="{ 'pr-16': affinity !== null }">
-      {{ post.title }}
-      
       <v-btn
-        v-if="isOwner && !removed"
-        icon="mdi-delete"
+        v-if="isOwner"
+        aria-label="Eliminar publicación"
+        icon="mdi-delete-outline"
         :loading="deleting"
         size="small"
         variant="text"
         @click="deletePost"
       />
-    </v-card-title>
+    </div>
 
-    <v-card-subtitle>
-      <RouterLink class="text-decoration-none" :to="`/usuario/${post.author_id}`">
-        {{ post.profiles?.full_name }}
-      </RouterLink>
+    <div class="opportunity-body">
+      <h2 class="opportunity-title">{{ post.title }}</h2>
+      <p class="opportunity-description" :class="{'is-collapsed':!expanded}">{{ post.description }}</p>
 
-      <span v-if="roleLabel"> - {{ roleLabel }}</span>
-    </v-card-subtitle>
+      <v-btn
+        v-if="(post.description || '').length > 180"
+        :aria-expanded="expanded"
+        class="expand-description"
+        size="small"
+        variant="text"
+        @click="expanded = !expanded"
+      >{{ expanded ? 'Ver menos' : 'Ver más' }}</v-btn>
 
-    <v-card-text>
-      {{ post.description }}
       <v-img
         v-if="post.image_url"
+        :alt="`Imagen de ${post.title}`"
+        :aspect-ratio="16/9"
+        class="opportunity-image"
         cover
-        height="300"
+        max-height="260"
         :src="post.image_url"
-        width="485"
       />
 
-      <div class="d-flex flex-wrap ga-2 mt-4">
+      <div v-if="offerNature" aria-label="Clasificación de la oferta" class="d-flex flex-wrap ga-2 mt-4">
+        <v-chip color="primary" size="small" :to="{path:'/',query:{nature:offerNature}}" variant="tonal">{{ natureLabel(offerNature) }}</v-chip>
+
         <v-chip
-          v-for="t in visibleTags"
-          :key="t.tags.id"
-          :aria-label="`Buscar publicaciones con la etiqueta ${t.tags.name}`"
+          v-if="offerSector"
+          color="secondary"
           size="small"
-          :to="tagLink(t.tags.name)"
-        >
-          {{ t.tags.name }}
-        </v-chip>
+          :to="{path:'/',query:{sector:offerSector}}"
+          variant="tonal"
+        >{{ offerSectorName || offerSector }}</v-chip>
       </div>
 
-      <div v-if="offerNature" aria-label="Clasificación de la oferta" class="d-flex flex-wrap ga-2 mt-3">
-        <v-chip color="primary" :to="{ path: '/', query: { nature: offerNature } }">{{ natureLabel(offerNature) }}</v-chip>
-        <v-chip v-if="offerSector" color="secondary" :to="{ path: '/', query: { sector: offerSector } }">{{ offerSectorName || offerSector }}</v-chip>
+      <div v-if="visibleTags.length > 0" class="d-flex flex-wrap ga-2 mt-3">
+        <v-chip
+          v-for="t in (showAllTags ? visibleTags : visibleTags.slice(0,4))"
+          :key="t.tags.id"
+          size="small"
+          :to="tagLink(t.tags.name)"
+          variant="outlined"
+        >{{ t.tags.name }}</v-chip>
+
+        <v-btn v-if="visibleTags.length > 4" size="small" variant="text" @click="showAllTags = !showAllTags">{{ showAllTags ? 'Menos etiquetas' : '+' + (visibleTags.length-4) }}</v-btn>
       </div>
 
       <RecommendationExplanation :post="post" />
-    </v-card-text>
+      <details v-if="affinity !== null" class="affinity-detail"><summary>Ver detalle de afinidad</summary><p>Puntaje de afinidad: {{ affinityLabel }} · No es un porcentaje.</p><p v-if="tagScores.length === 0">Esta oferta no tiene etiquetas.</p><p v-for="t in tagScores" :key="t.id">{{ t.name }}: {{ scoreLabel(t.score) }}</p></details>
+    </div>
 
     <v-alert v-if="actionError" class="mx-4 mb-3" role="alert" type="error">{{ actionError }}</v-alert>
 
-    <v-card-actions v-if="!readonly && !authStore.isGuest">
-      <v-btn :color="myReaction === true ? 'secondary' : 'muted'" :disabled="reacting || deleting" @click="react(true)">Me Interesa</v-btn>
-      <v-btn :color="myReaction === false ? 'error' : 'muted'" :disabled="reacting || deleting" @click="react(false)">No me Interesa</v-btn>
-    </v-card-actions>
+    <div class="opportunity-actions">
+      <v-btn :to="`/usuario/${post.author_id}`" variant="outlined">Ver empresa</v-btn>
+
+      <template v-if="!readonly && authStore.user && !authStore.isGuest">
+        <v-btn
+          :aria-pressed="myReaction === true"
+          color="secondary"
+          :disabled="reacting || deleting"
+          :variant="myReaction === true ? 'flat' : 'tonal'"
+          @click="react(true)"
+        >Me interesa</v-btn>
+
+        <v-btn :aria-pressed="myReaction === false" :disabled="reacting || deleting" variant="text" @click="react(false)">{{ myReaction === false ? 'Pasaste esta oferta' : 'Pasar' }}</v-btn>
+      </template>
+    </div>
   </v-card>
 </template>
-
 <script setup>
   import { computed, onMounted, ref } from 'vue'
   import { useRoute } from 'vue-router'
@@ -100,6 +101,8 @@
     readonly: { type: Boolean, default: false }, // oculta me interesa/no me interesa
   })
   const emit = defineEmits(['deleted'])
+  const expanded = ref(false), showAllTags = ref(false)
+  const companyInitials = computed(() => (props.post.profiles?.full_name || 'Empresa').split(/\s+/).slice(0,2).map(word => word[0]).join('').toUpperCase())
 
   // Desglose por etiqueta (viene de user_tag_scores en la misma consulta); sin fila = 0
   const tagScores = computed(() => visibleTags.value.map(t => ({
@@ -177,10 +180,5 @@
 
 
 <style scoped>
-  .affinity-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 1;
-  }
+.opportunity-company{display:flex;align-items:center;gap:12px;padding:20px 24px 0}.company-copy{min-width:0;flex:1}.company-copy a{font-weight:650;text-decoration:none;overflow-wrap:anywhere}.company-copy p{font-size:.85rem;color:rgb(var(--v-theme-muted));margin:0}.opportunity-body{padding:18px 24px}.opportunity-title{font-size:1.35rem;line-height:1.35;margin-bottom:10px;overflow-wrap:anywhere}.opportunity-description{white-space:pre-line;overflow-wrap:anywhere;line-height:1.6}.is-collapsed{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}.expand-description{margin-left:-10px}.opportunity-image{margin-top:16px;border-radius:12px;width:100%}.affinity-detail{font-size:.85rem;color:rgb(var(--v-theme-muted));margin-top:16px}.affinity-detail summary{cursor:pointer}.opportunity-actions{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 20px}@media(max-width:600px){.opportunity-company{padding:16px 16px 0}.opportunity-body{padding:16px}.opportunity-actions{padding:0 16px 16px}.opportunity-title{font-size:1.2rem}}
 </style>

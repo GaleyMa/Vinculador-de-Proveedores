@@ -1,20 +1,20 @@
 <template>
   <v-container class="fill-height" max-width="480">
     <v-card class="pa-6" width="100%">
-      <v-card-title>Crear cuenta</v-card-title>
+      <div class="text-center mb-5"><img :src="logo" alt="" width="64"><h1 class="page-title mt-2 mb-2">Bienvenido a SunFinder</h1><p class="text-muted">Entra para guardar tus intereses y publicar.</p></div>
       <v-form @submit.prevent="handleRegister">
         <v-text-field v-model="email" label="Correo" type="email" required />
         <v-text-field v-model="password" label="Contraseña" type="password" required />
         <v-alert v-if="error" type="error" density="compact" class="mb-4">{{ error }}</v-alert>
-        <v-btn type="submit" color="primary" block :loading="loading">Iniciar Sesion</v-btn>
+        <v-btn type="submit" color="primary" block :loading="loading">Iniciar sesión</v-btn>
       </v-form>
       <v-divider class="my-4" />
       <v-btn block :loading="googleLoading" prepend-icon="mdi-google" variant="outlined" @click="google">
         Continuar con Google
       </v-btn>
-      <v-card-actions class="justify-space-between">
+      <v-card-actions class="flex-column ga-2">
         <RouterLink to="/register">¿No tienes cuenta? Regístrate</RouterLink>
-        <v-btn variant="text" @click="enterAsGuest">Unirse como invitado</v-btn>
+        <v-btn variant="text" @click="enterAsGuest">Explorar sin cuenta</v-btn>
       </v-card-actions>
     </v-card>
   </v-container>
@@ -22,6 +22,7 @@
 
 <script setup>
     import { ref } from 'vue'
+    import logo from '@/assets/logo.png'
     import { useRouter } from 'vue-router'
     import { useAuthStore } from '@/stores/auth'
 

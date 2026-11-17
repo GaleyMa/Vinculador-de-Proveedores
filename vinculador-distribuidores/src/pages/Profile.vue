@@ -1,13 +1,13 @@
 <template>
-  <v-container max-width="700">
-    <v-card class="pa-6 mb-6">
+  <v-container max-width="1000" class="company-page">
+    <v-card class="pa-6 mb-6 company-profile">
       <div class="d-flex align-center">
         <v-avatar size="64" color="primary" class="mr-4" style="cursor: pointer" @click="openAvatarDialog">
           <v-img v-if="authStore.profile?.avatar_url" :src="authStore.profile.avatar_url" />
           <v-icon v-else size="36">mdi-account</v-icon>
         </v-avatar>
         <div>
-          <div class="text-h5">{{ authStore.profile?.full_name }}</div>
+          <h1 class="text-h5 company-name">{{ authStore.profile?.full_name }}</h1>
             <v-chip size="small" :color="ROLE_COLORS[authStore.profile?.role]">
               {{ ROLE_LABELS[authStore.profile?.role] }}
             </v-chip>
@@ -24,18 +24,18 @@
       <!-- Bio -->
       <div class="mt-4">
         <div class="d-flex align-center justify-space-between">
-          <span class="text-muted text-caption">BIO</span>
-          <v-btn size="small" variant="text" icon="mdi-pencil" @click="openBioDialog" />
+          <span class="text-muted text-caption">SOBRE LA EMPRESA</span>
+          <v-btn aria-label="Editar descripción" size="small" variant="text" icon="mdi-pencil" @click="openBioDialog" />
         </div>
         <p v-if="authStore.profile?.bio">{{ authStore.profile.bio }}</p>
-        <p v-else class="text-muted">Sin biografía todavía.</p>
+        <p v-else class="text-muted">Cuéntales a otras empresas qué haces y cómo puedes ayudarles.</p>
       </div>
 
       <!-- Tags -->
       <div class="mt-4">
         <div class="d-flex align-center justify-space-between">
-          <span class="text-muted text-caption">ETIQUETAS</span>
-          <v-btn size="small" variant="text" icon="mdi-pencil" @click="openTagsDialog" />
+          <span class="text-muted text-caption">ESPECIALIDADES</span>
+          <v-btn aria-label="Editar especialidades" size="small" variant="text" icon="mdi-pencil" @click="openTagsDialog" />
         </div>
         <div v-if="myTags.length">
           <v-chip
@@ -53,8 +53,8 @@
       <!-- Links -->
       <div class="mt-4">
         <div class="d-flex align-center justify-space-between">
-          <span class="text-muted text-caption">ENLACES</span>
-          <v-btn size="small" variant="text" icon="mdi-pencil" @click="openLinksDialog" />
+          <span class="text-muted text-caption">ENCUENTRA A LA EMPRESA</span>
+          <v-btn aria-label="Editar enlaces" size="small" variant="text" icon="mdi-pencil" @click="openLinksDialog" />
         </div>
         <div v-if="myLinks.length">
           <div v-for="link in myLinks" :key="link.id">
@@ -83,7 +83,7 @@
 
     </v-card>
 
-    <div class="text-h6 mb-3">Mis publicaciones</div>
+    <div class="text-h6 mb-3">Mis ofertas y necesidades</div>
     <v-progress-circular v-if="loading" indeterminate class="d-block mx-auto" />
     <p v-else-if="myPosts.length === 0" class="text-muted">Aún no tienes publicaciones.</p>
     <PostCard v-for="post in myPosts" :key="post.id" :post="post" readonly @deleted="removePost" />

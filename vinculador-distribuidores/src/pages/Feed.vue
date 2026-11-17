@@ -1,8 +1,8 @@
 <template>
   <div class="discover" :class="{ 'discover--fill': !hasFilters }">
     <header class="discover-inner discover-header">
-      <h1 class="page-title">Descubre oportunidades</h1>
-      <p class="discover-subtitle text-muted">Encuentra empresas con las que puedes hacer negocios</p>
+      <h1 class="page-title">Encuentra tu próxima oportunidad</h1>
+      <p class="discover-subtitle text-muted">Explora ofertas y necesidades de otras empresas.</p>
 
       <div class="discover-controls">
         <div v-if="canChooseRole" class="explore">
@@ -33,7 +33,7 @@
       </div>
 
       <v-expansion-panels class="mt-3" variant="accordion">
-        <v-expansion-panel title="Buscar por clasificación de la oferta">
+        <v-expansion-panel title="Filtrar por producto o servicio y rubro">
           <v-expansion-panel-text>
             <OfferFilters :nature="nature" :sector-id="sectorId" @update:nature="setOfferFilter('nature', $event)" @update:sector-id="setOfferFilter('sector', $event)" />
             <p class="text-caption mt-2">Busca ofertas clasificadas por sus autores. Puedes combinar estos filtros con texto y etiquetas.</p>
@@ -41,7 +41,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
 
-      <RecommendationFilters v-if="!hasFilters" />
+      <v-expansion-panels v-if="!hasFilters" class="mt-3" variant="accordion"><v-expansion-panel title="Ajustar recomendaciones de empresas"><v-expansion-panel-text><RecommendationFilters /></v-expansion-panel-text></v-expansion-panel></v-expansion-panels>
     </header>
 
     <!-- Una recomendación a la vez -->
@@ -75,7 +75,7 @@
         </v-chip>
 
         <v-chip v-if="nature" closable @click:close="removeFilter('nature')">{{ natureLabel(nature) }}</v-chip>
-        <v-chip v-if="sectorId" closable @click:close="removeFilter('sector')">Rubro: {{ sectorId }}</v-chip>
+        <v-chip v-if="sectorId" closable @click:close="removeFilter('sector')">Rubro: {{ sectorName }}</v-chip>
         <v-btn :to="{ path: '/', query: {} }" variant="text">Limpiar filtros</v-btn>
       </div>
 
@@ -155,6 +155,7 @@
   const tag = computed(() => searchParam(route.query.tag))
   const nature = computed(() => searchParam(route.query.nature))
   const sectorId = computed(() => searchParam(route.query.sector))
+  const sectorName = computed(() => ({empaque:'Empaque',mantenimiento:'Mantenimiento',transporte:'Transporte',tecnologia:'Tecnología',alimentos:'Alimentos'}[sectorId.value] || sectorId.value))
   const hasFilters = computed(() => Boolean(text.value || tag.value || nature.value || sectorId.value))
   const page = computed(() => {
     const value = Number(searchParam(route.query.page))

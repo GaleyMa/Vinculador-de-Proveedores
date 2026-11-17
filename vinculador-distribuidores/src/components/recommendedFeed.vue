@@ -49,14 +49,15 @@
   let scrolling = false
   let idleWaiters = []
 
-  // Altura exacta del slide (puede ser fraccionaria; clientHeight la redondea)
-  const slideHeight = () => scroller.value?.getBoundingClientRect().height || 0
+  // Measure real slide positions: expanded descriptions and mobile images change heights.
+  function slideTop(index) {
+    const el = scroller.value, slide = el?.querySelectorAll('.reco-slide')[index]
+    if (!el || !slide) return 0
+    return slide.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop
+  }
 
-  // Posición ABSOLUTA del post activo: no depende de lo que el navegador ya haya ajustado
   function pinToActive() {
-    const el = scroller.value
-    const height = slideHeight()
-    if (el && height) el.scrollTo({ top: store.activeIndex * height, behavior: 'instant' })
+    scroller.value?.scrollTo({ top: slideTop(store.activeIndex), behavior: 'instant' })
   }
 
   async function start() {
@@ -91,11 +92,11 @@
 
   function onSettled() {
     const el = scroller.value
-    const height = slideHeight()
-    if (!el || !height || store.loading || store.items.length === 0) return
-
-    const raw = Math.round(el.scrollTop / height)
-    const idx = Math.min(raw, store.items.length - 1) // el slide final no es un post
+    if (!el || store.loading || store.items.length === 0) return
+    let idx = 0
+    for (let i = 1; i < store.items.length; i++) {
+      if (slideTop(i) <= el.scrollTop + el.clientHeight * 0.35) idx = i
+    } // el slide final no es un post
     const diff = idx - store.activeIndex
     if (diff === 0) return
   
@@ -124,16 +125,17 @@
     overflow-y: auto;
     overflow-anchor: none;
     overscroll-behavior-y: contain;
-    scroll-snap-type: y mandatory;
+    scroll-snap-type: y proximity;
   }
 
   .reco-slide {
-    height: 100%;
+    min-height: 100%;
+    height: auto;
     display: flex;
-    overflow-y: auto;               /* si un post es más alto que la pantalla, se desplaza dentro */
+    overflow: visible;
     padding: 16px;
     scroll-snap-align: start;
-    scroll-snap-stop: always;       /* no deja saltarse posts de un golpe */
+    scroll-snap-stop: normal;       /* no deja saltarse posts de un golpe */
   }
 
   .reco-card {
