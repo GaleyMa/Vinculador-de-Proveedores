@@ -1,28 +1,21 @@
-# Consultas públicas con IA
+# Búsqueda pública y asistente con cuenta
 
-La búsqueda de texto de la portada abre el asistente con esa consulta y la opción de comparación con IA activada. Buscar con ayuda abre el mismo asistente sin exigir una cuenta registrada. Las tarjetas por rubro conservan la búsqueda filtrada. La sesión anónima de Supabase se utiliza como identificador técnico para permisos y cuota: no requiere perfil empresarial.
+## Recorridos
 
-El asistente recibe la consulta, los filtros y descripciones de las ofertas candidatas. No consulta preferencias, reacciones ni puntajes de afinidad. /feed conserva el recorrido de recomendaciones del proyecto; publicar, reaccionar y editar datos requieren una cuenta registrada.
-
-La integración conserva el comportamiento del asistente actual: las candidatas internas se buscan mediante texto y clasificación y Gemini compara las coincidencias encontradas. Esto no incorpora por sí mismo un motor semántico de embeddings ni garantiza coincidencias ante cualquier sinónimo. La búsqueda web sigue siendo opcional y requiere Tavily.
+- La búsqueda de la portada y /buscar consultan Tavily automáticamente, sin Gemini, perfiles, historial ni ofertas internas. El visitante solo ve resultados web identificados por fuente. Los rubros seleccionan filtros del formulario. La sesión anónima de Supabase es un identificador técnico para validar peticiones y aplicar cuota; no exige registro al visitante.
+- /asistente requiere cuenta registrada. «Dime qué tienes en mente y te ayudamos» permite comparar ofertas internas con Gemini y, opcionalmente, incluir fuentes web de Tavily.
+- La personalización del asistente es opcional y se activa con una casilla. El servidor lee únicamente el perfil del usuario autenticado: rol, descripción y especialidades. Se envían esos campos a Gemini para orientar la comparación; no se envían nombre, correo, teléfono, ID ni historial de reacciones. La descripción es texto del usuario y debe evitar información confidencial. Sin consentimiento no se lee el perfil para el asistente. Si no hay datos, la comparación sigue sin personalización.
+- La personalización orienta el resumen sobre las candidatas recuperadas por texto y clasificación. No modifica el motor de candidatas ni añade embeddings o aprendizaje del historial.
+- Directorios, perfiles de empresas, necesidades, feed y asistente con IA requieren registro. Al intentar acceder aparece la invitación con Crear cuenta, Ya tengo cuenta y Seguir buscando. Las fuentes web siguen identificadas; abrir su enlace también requiere registro en este diseño.
 
 ## Activación necesaria en Supabase
 
-1. Confirmar que están aplicadas las migraciones de ofertas del 16 de noviembre. No repetir el volcado completo de tablas.
-2. Aplicar 202611170001_public_assistant.sql. Esta migración permite consumir la cuota desde una sesión de invitado; no habilita escrituras de invitados sobre publicaciones ni perfiles. Conserva 10 consultas externas por sesión en ventanas de 10 minutos y bloquea acceso directo a los contadores.
-3. Redesplegar supplier-assistant con el handler de esta rama. El JWT se valida con auth.getUser y la configuración verify_jwt=false del proyecto se mantiene. No deshabilitar esa validación del handler.
-4. Confirmar GEMINI_API_KEY y GEMINI_MODEL; para búsqueda web, TAVILY_API_KEY. Revisar que APP_ORIGINS incluya el origen exacto del despliegue que se va a probar.
-5. Confirmar que el acceso anónimo esté habilitado en Auth. Si falla crear la sesión, la consulta todavía no puede llegar a las APIs externas.
-6. En incógnito, buscar cajas desde la portada. Verificar ofertas, resumen de IA, fuentes opcionales y límites. Si falta configuración, la app informa el fallo; no simula resultados.
+1. Confirmar las migraciones existentes de ofertas del 16 de noviembre.
+2. Aplicar `202611170001_public_assistant.sql` si todavía no está aplicada. Permite a sesiones técnicas de invitado consumir cuota para Tavily: 10 consultas externas en ventanas de 10 minutos. El nombre histórico de la migración se conserva; no concede al visitante permiso para llamar a Gemini.
+3. Redesplegar `supplier-assistant` con el handler de esta rama. Valida el JWT con auth.getUser y rechaza ai o personalize para usuarios is_anonymous antes de acceder a ofertas, perfiles o APIs externas. El verify_jwt=false del proyecto no sustituye la validación del handler.
+4. Confirmar `TAVILY_API_KEY` para búsqueda pública. Confirmar `GEMINI_API_KEY` y `GEMINI_MODEL` para el asistente con cuenta. Revisar que `APP_ORIGINS` incluya exactamente Preview y Producción. Esas claves son secretos de la función; nunca variables VITE.
+5. Habilitar acceso anónimo en Auth. En Vercel configurar URL y clave pública de Supabase tanto en Preview como en Producción.
+6. Confirmar que las políticas existentes permiten a un usuario registrado leer su propio perfil y profile_tags. No se requieren columnas ni tablas nuevas para la personalización. Revisar por separado SELECT/RPC de perfiles, necesidades y feed para impedir consultas directas de is_anonymous: las restricciones del router no sustituyen RLS.
+7. Probar en incógnito: buscar cajas devuelve fuentes web, no resumen IA ni ofertas internas; abrir asistente muestra registro. Probar con cuenta: consulta interna, comparación IA, fuentes opcionales y personalización activada/desactivada. Probar error de claves, cuota y acceso directo a API con ai=true desde invitado (403).
 
-Las variables de Supabase en Vercel son la URL y la clave pública. Las claves de Gemini/Tavily se mantienen exclusivamente como secretos de la función. No se han ejecutado migraciones ni despliegues remotos de Supabase desde esta entrega.
-
-## Verificación local
-
-23 pruebas de ofertas/asistente, una prueba de migración de cuota para visitantes y cinco de navegación invitada aprobadas; compilación correcta. Los servicios externos y las sesiones remotas se simularon. La comprobación en el proyecto real requiere los pasos anteriores.
-
-## Alcance público y registro
-
-El visitante solo accede a portada, formulario del asistente y resultados de búsqueda sin personalización. Directorios, perfiles empresariales, necesidades y feed requieren registro. Ver empresa, Me interesa y consultar una fuente externa abren una invitación a registrarse; cerrar la ventana conserva los resultados. Las fuentes externas siguen identificadas en la tarjeta. Los filtros por rubro abren el formulario con el rubro seleccionado; no consultan recomendaciones personalizadas.
-
-Esta entrega restringe la navegación del cliente. El equipo con acceso a Supabase debe revisar las políticas SELECT de perfiles, necesidades y las RPC existentes para impedir consultas directas de usuarios is_anonymous, manteniendo candidate_offers como proyección mínima de resultados. No se afirma que ocultar rutas impida leer datos mediante la API. Deben validarse esas políticas en el proyecto real antes de considerar completa la restricción de datos.
+El merge en Vercel no ejecuta migraciones ni despliega Edge Functions. No se han realizado cambios remotos en Supabase desde esta entrega. Las pruebas locales usan servicios simulados y PostgreSQL local; falta validación con el proyecto y APIs reales.

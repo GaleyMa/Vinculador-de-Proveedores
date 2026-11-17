@@ -53,23 +53,31 @@ test('Pantallas Vue y sesiones: clasificación, fuentes y recuperación de acces
     await t.test('El asistente ofrece búsqueda interna y opciones externas explícitas', async () => {
       const {pinia} = setup('cliente')
       const html = await render(Assistant,{},pinia)
-      assert.match(html,/Asistente de proveedores/)
+      assert.match(html,/Dime qué tienes en mente y te ayudamos/)
       assert.match(html,/Ayudarme a comparar los resultados/)
       assert.match(html,/Incluir opciones de la web/)
       const webInput = html.match(/<input[^>]*aria-label="Incluir opciones de la web"[^>]*>/)?.[0]
       assert.ok(webInput)
       assert.doesNotMatch(webInput,/checked/)
     })
-    await t.test('Invitado puede consultar el asistente pero no publicar', async () => {
+    await t.test('Invitado solo ve búsqueda y registro en navegación', async () => {
       const {pinia,auth} = setup('cliente')
       auth.user = {id:'guest',is_anonymous:true}
       const html = await render(NavBar,{},pinia)
       assert.doesNotMatch(html,/href="\/publicar"/)
-      assert.match(html,/href="\/asistente"/)
+      assert.doesNotMatch(html,/href="\/asistente"/)
       assert.doesNotMatch(html,/href="\/(perfiles|necesidades|feed)"/)
       const web = await render(WebCard,{result:{title:'Cajas',source:'example.test',url:'https://example.test',content:'Oferta externa'}},pinia)
       assert.doesNotMatch(web,/href="https:\/\/example.test"/)
       assert.match(web,/example.test/)
+    })
+    await t.test('Búsqueda pública usa Tavily sin opciones de IA ni perfil', async () => {
+      const {pinia,auth} = setup('cliente')
+      auth.user = {id:'guest',is_anonymous:true}
+      const html = await render(Assistant,{publicSearch:true},pinia)
+      assert.match(html,/Busca proveedores en la web/)
+      assert.match(html,/Tavily/)
+      assert.doesNotMatch(html,/Ayudarme a comparar|Usar mi rol|Incluir opciones de la web/)
     })
     await t.test('Inicialización simultánea comparte petición y suscripción; callback Auth no devuelve promesa', async () => {
       const {auth} = setup('cliente')

@@ -15,7 +15,7 @@
         <v-card class="pa-6" rounded="xl">
           <v-icon color="primary" icon="mdi-account-plus-outline" size="36" class="mb-3" />
           <h2 id="registration-title" class="text-h5 mb-3">Regístrate para tener acceso a más funciones</h2>
-          <p class="mb-5">Crea tu cuenta para ver perfiles de empresas, explorar necesidades, publicar y guardar tus intereses. Puedes seguir buscando con IA sin registrarte.</p>
+          <p class="mb-5">Crea tu cuenta para ver perfiles de empresas, explorar necesidades, publicar y guardar tus intereses. También tendrás acceso al asistente con IA. Puedes seguir consultando resultados web sin registrarte.</p>
           <v-btn block color="primary" to="/register" @click="registrationPromptOpen = false">Crear cuenta</v-btn>
           <v-btn block class="mt-2" variant="outlined" to="/login" @click="registrationPromptOpen = false">Ya tengo cuenta</v-btn>
           <v-btn block class="mt-2" variant="text" @click="registrationPromptOpen = false">Seguir buscando</v-btn>

@@ -153,11 +153,11 @@ test('Acceso directo: sesión ausente, invitado, perfil incompleto y usuario reg
   assert.equal(routeAccess({user:null},{path:'/login'}),true)
 })
 
-function assistantFixture({ user = {id:'u'}, secrets = {}, quota = true, fetchImpl, offers = [{ id:'p',title:'Cajas',description:'Cartón',nature:'bien',sectors:{name:'Empaque'} }] } = {}) {
+function assistantFixture({ user = {id:'u'}, secrets = {}, quota = true, profile = {role:'cliente',bio:'Empaques',profile_tags:[{tags:{name:'Cartón'}}]}, fetchImpl, offers = [{ id:'p',title:'Cajas',description:'Cartón',nature:'bien',sectors:{name:'Empaque'} }] } = {}) {
   const calls = []
   const handler = createHandler({
     env: key => ({ SUPABASE_URL:'https://example.supabase.co', SUPABASE_ANON_KEY:'public', ...secrets })[key],
-    createClient: () => ({auth:{getUser:async()=>({data:{user}})},rpc:async (name,args) => {calls.push({name,args});return {data:name==='candidate_offers'?offers:quota}}}),
+    createClient: () => ({from:(table)=>{calls.push({name:table});return {select:()=>({eq:()=>({maybeSingle:async()=>({data:profile})})})}},auth:{getUser:async()=>({data:{user}})},rpc:async (name,args) => {calls.push({name,args});return {data:name==='candidate_offers'?offers:quota}}}),
     fetchImpl: fetchImpl || (()=>{throw new Error('No external call expected')}),
   })
   const request = (input, headers) =>
@@ -200,21 +200,39 @@ test('Fuentes externas excluyen URLs ejecutables, credenciales y duplicados', ()
 })
 
 
-test('Edge: invitado consulta IA con cuota y sin preferencias del perfil', async () => {
+test('Edge: invitado consulta Tavily sin acceder a ofertas ni perfil; bloquea IA manipulada', async () => {
   const fixture = assistantFixture({
-    user: { id: 'guest', is_anonymous: true },
-    secrets: { GEMINI_API_KEY: 'secret', GEMINI_MODEL: 'test-model' },
-    fetchImpl: async (_url, options) => {
-      const payload = JSON.parse(options.body)
-      const sources = JSON.parse(payload.contents[0].parts[0].text)
-      assert.deepEqual(Object.keys(sources).sort(), ['offers', 'query', 'web'])
-      return Response.json({ candidates: [{ content: { parts: [{ text: 'O1 ofrece cajas.' }] } }] })
+    user:{id:'guest',is_anonymous:true},
+    secrets:{TAVILY_API_KEY:'secret',GEMINI_API_KEY:'secret',GEMINI_MODEL:'test-model'},
+    fetchImpl:async (url,options)=>{
+      assert.equal(url,'https://api.tavily.com/search')
+      assert.equal(JSON.parse(options.body).query,'proveedores cajas')
+      return Response.json({results:[{url:'https://supplier.test',title:'Cajas',content:'Cartón'}]})
     },
   })
-  const response = await fixture.request({ query: 'cajas', ai: true })
-  assert.equal(response.status, 200)
-  assert.equal((await response.json()).summary, 'O1 ofrece cajas.')
-  assert.ok(fixture.calls.some(call => call.name === 'consume_assistant_quota'))
-  const limited = assistantFixture({ user: { id: 'guest', is_anonymous: true }, secrets: { GEMINI_API_KEY: 'secret', GEMINI_MODEL: 'test-model' }, quota: false })
-  assert.equal((await limited.request({ query: 'cajas', ai: true })).status, 429)
+  const response=await fixture.request({query:'cajas',publicSearch:true,web:true,ai:false})
+  assert.equal(response.status,200)
+  const data=await response.json()
+  assert.deepEqual(data.offers,[])
+  assert.equal(data.summary,'')
+  assert.equal(data.web.length,1)
+  assert.deepEqual(fixture.calls.map(c=>c.name),['consume_assistant_quota'])
+  for(const input of [{query:'cajas',ai:true},{query:'cajas',personalize:true}]) assert.equal((await fixture.request(input)).status,403)
+})
+test('Edge: personalización solo con consentimiento, datos propios mínimos y cuenta real', async () => {
+  for(const personalize of [false,true]){
+    const fixture=assistantFixture({
+      secrets:{GEMINI_API_KEY:'secret',GEMINI_MODEL:'test-model'},
+      fetchImpl:async (_url,options)=>{
+        const sources=JSON.parse(JSON.parse(options.body).contents[0].parts[0].text)
+        if(personalize) assert.deepEqual(sources.profile,{role:'cliente',description:'Empaques',specialties:['Cartón']})
+        else assert.equal(sources.profile,undefined)
+        return Response.json({candidates:[{content:{parts:[{text:'O1 ofrece cajas.'}]}}]})
+      },
+    })
+    const response=await fixture.request({query:'cajas',ai:true,personalize})
+    assert.equal(response.status,200)
+    assert.equal((await response.json()).summary,'O1 ofrece cajas.')
+    assert.equal(fixture.calls.some(c=>c.name==='profiles'),personalize)
+  }
 })

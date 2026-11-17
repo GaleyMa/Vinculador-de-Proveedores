@@ -108,7 +108,7 @@
     { label: 'Para tu empresa', icon: 'mdi-compass-outline', to: '/feed', match: p => p === '/feed' },
     { label: 'Empresas', icon: 'mdi-domain', to: '/perfiles', match: p => p === '/perfiles' || p.startsWith('/usuario/') },
     { label: 'Necesidades', icon: 'mdi-clipboard-text-outline', to: '/necesidades', match: p => p.startsWith('/necesidades') },
-    { label: 'Asistente', icon: 'mdi-creation', to: '/asistente', guest: true, match: p => p === '/asistente' },
+    { label: 'Asistente', icon: 'mdi-creation', to: '/asistente', match: p => p === '/asistente' },
     { label: 'Publicar', icon: 'mdi-plus-circle-outline', to: '/publicar', match: p => p === '/publicar' },
     { label: 'Mi empresa', icon: 'mdi-office-building-outline', to: '/perfil', match: p => p === '/perfil' },
   ]
