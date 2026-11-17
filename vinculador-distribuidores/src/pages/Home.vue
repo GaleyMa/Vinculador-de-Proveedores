@@ -5,7 +5,15 @@
       <p v-else role="status">Preparando tu búsqueda…</p>
     </v-container>
 
-    <Assistant v-else public-search :key="JSON.stringify(route.query)" auto-search :initial-query="String(route.query.q || route.query.tag || '')" :initial-nature="String(route.query.nature || '')" :initial-sector="String(route.query.sector || '')" />
+    <Assistant
+      v-else
+      :key="JSON.stringify(route.query)"
+      auto-search
+      :initial-nature="String(route.query.nature || '')"
+      :initial-query="String(route.query.q || route.query.tag || '')"
+      :initial-sector="String(route.query.sector || '')"
+      public-search
+    />
   </template>
 
   <v-container v-else class="home-page" max-width="1180">
@@ -30,7 +38,8 @@
             <v-btn size="large" type="submit">Buscar <v-icon end icon="mdi-arrow-right" /></v-btn></div>
         </form>
 
-        <p class="home-note">Busca en la web con Tavily, sin cuenta ni personalización. Evita incluir datos confidenciales.</p>
+        <div aria-label="Ejemplos de búsqueda" class="search-examples"><span>Prueba con:</span><button v-for="example in examples" :key="example" type="button" @click="searchExample(example)">{{ example }}</button></div>
+        <p class="home-note">Busca en la web, sin cuenta ni personalización. Evita incluir datos confidenciales.</p>
         <p v-if="!auth.user || auth.isGuest" class="home-note"><v-icon icon="mdi-check-circle-outline" size="16" /> Puedes explorar sin crear una cuenta.</p>
         <RouterLink v-else class="home-note d-inline-block" to="/feed">Ver recomendaciones para tu empresa →</RouterLink>
       </div>
@@ -68,6 +77,8 @@
   const query = ref(''), error = ref('')
   const hasSearch = computed(() => ['q','tag','nature','sector'].some(key => Boolean(route.query[key])))
   const categories = [{id:'empaque',name:'Empaque',image:empaque},{id:'mantenimiento',name:'Mantenimiento',image:mantenimiento},{id:'transporte',name:'Transporte',image:transporte}]
+  const examples = ['Empaques', 'Mantenimiento', 'Transporte']
+  function searchExample(example) { query.value = example; search() }
   let preparing = false
   async function prepareSearch() {
     if (auth.user || preparing || !hasSearch.value) return
