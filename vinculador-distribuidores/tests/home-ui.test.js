@@ -41,6 +41,8 @@ test('Portada real Vue: búsqueda visible y enlaces a rubros sin crear sesión a
     const html = await renderToString(createSSRApp({ render: () => h(VApp, {}, { default: () => h(Home) }) }).use(pinia).use(router).use(createVuetify()))
     assert.match(html, /Encuentra proveedores/)
     assert.match(html, /Puedes explorar sin crear una cuenta/)
+    assert.match(html, /Ejemplos de búsqueda/)
+    for (const example of ['Empaques', 'Mantenimiento', 'Transporte']) assert.match(html, new RegExp('>' + example + '</button>'))
     for (const sector of ['empaque', 'mantenimiento', 'transporte']) assert.match(html, new RegExp('sector=' + sector))
     assert.equal(guestCalls, 0)
     assert.ok(html.indexOf('id="home-search"') < html.indexOf('class="home-visual"'))

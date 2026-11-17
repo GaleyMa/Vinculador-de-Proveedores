@@ -6,8 +6,8 @@
 
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import { registrationReasonForRoute, requestRegistration } from '@/lib/registrationPrompt'
 import { prepareGuestAccess, requiresRegistration, routeAccess } from '@/lib/routeAccess'
-import { requestRegistration } from '@/lib/registrationPrompt'
 import CreatePost from '@/pages/CreatePost.vue'
 import Feed from '@/pages/Feed.vue'
 import Login from '@/pages/Login.vue'
@@ -89,8 +89,8 @@ router.beforeEach(async (to) => {
   }
 
   if (requiresRegistration(authStore, to)) {
-    requestRegistration()
-    return router.currentRoute.value.matched.length ? false : '/'
+    requestRegistration(registrationReasonForRoute(to.path))
+    return router.currentRoute.value.matched.length > 0 ? false : '/'
   }
 
   try {

@@ -17,6 +17,7 @@
     </div>
 
     <div class="opportunity-body">
+      <span class="source-badge source-badge--internal"><v-icon icon="mdi-domain" size="15" /> Publicado en SunFinder</span>
       <h2 class="opportunity-title">{{ post.title }}</h2>
       <p class="opportunity-description" :class="{'is-collapsed':!expanded}">{{ post.description }}</p>
 
@@ -70,9 +71,9 @@
     <v-alert v-if="actionError" class="mx-4 mb-3" role="alert" type="error">{{ actionError }}</v-alert>
 
     <div class="opportunity-actions">
-      <v-btn :to="`/usuario/${post.author_id}`" variant="outlined">Ver empresa</v-btn>
+      <v-btn :to="`/usuario/${post.author_id}`" variant="text">Ver empresa</v-btn>
 
-      <v-btn v-if="!authStore.user || authStore.isGuest" color="secondary" variant="tonal" @click="requestRegistration">Me interesa</v-btn>
+      <v-btn v-if="!authStore.user || authStore.isGuest" color="secondary" variant="tonal" @click="requestRegistration('interest')">Me interesa</v-btn>
 
       <template v-if="!readonly && authStore.user && !authStore.isGuest">
         <v-btn
