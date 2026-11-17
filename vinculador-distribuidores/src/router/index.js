@@ -6,7 +6,8 @@
 
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
-import { routeAccess } from '@/lib/routeAccess'
+import { prepareGuestAccess, requiresRegistration, routeAccess } from '@/lib/routeAccess'
+import { requestRegistration } from '@/lib/registrationPrompt'
 import CreatePost from '@/pages/CreatePost.vue'
 import Feed from '@/pages/Feed.vue'
 import Login from '@/pages/Login.vue'
@@ -20,7 +21,6 @@ const router = createRouter({
     {
       path: '/',
       component: () => import('@/pages/Home.vue'),
-      meta: { guestOk: true }
     },
     {
       path: '/login',
@@ -30,6 +30,7 @@ const router = createRouter({
       path: '/register',
       component: Register,
     },
+    { path: '/buscar', name: 'public-search', props: { publicSearch: true }, component: () => import('@/pages/Assistant.vue') },
     { path: '/asistente', name: 'assistant', component: () => import('@/pages/Assistant.vue') },
     {
       path: '/publicar',
@@ -43,7 +44,6 @@ const router = createRouter({
       path: '/necesidades',
       name: 'needs',
       component: () => import('@/pages/Needs.vue'),
-      meta: { guestOk: true }
     },
     {
       path: '/necesidades/nueva',
@@ -59,24 +59,20 @@ const router = createRouter({
       path: '/necesidades/:id',
       name: 'need-detail',
       component: () => import('@/pages/NeedDetail.vue'),
-      meta: { guestOk: true }
     },
     {
       path: '/perfiles',
       name: 'profile-search',
       component: () => import('@/pages/ProfileSearch.vue'),
-      meta: { guestOk: true }
     },
     {
       path: '/feed',
       component: Feed,
-      meta: { guestOk: true }
     },
     {
       path: '/usuario/:id', 
       name: 'user-profile', 
       component: () => import('@/pages/UserProfile.vue'),
-      meta: { guestOk: true }
     },
     {
       path: '/completar-perfil',
@@ -92,6 +88,16 @@ router.beforeEach(async (to) => {
     catch { return to.path === '/' ? true : '/' }
   }
 
+  if (requiresRegistration(authStore, to)) {
+    requestRegistration()
+    return router.currentRoute.value.matched.length ? false : '/'
+  }
+
+  try {
+    await prepareGuestAccess(authStore, to)
+  } catch {
+    return { path: '/login', query: { guest: 'unavailable', next: to.fullPath } }
+  }
   return routeAccess(authStore, to)
 })
 

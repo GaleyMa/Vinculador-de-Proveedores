@@ -72,6 +72,8 @@
     <div class="opportunity-actions">
       <v-btn :to="`/usuario/${post.author_id}`" variant="outlined">Ver empresa</v-btn>
 
+      <v-btn v-if="!authStore.user || authStore.isGuest" color="secondary" variant="tonal" @click="requestRegistration">Me interesa</v-btn>
+
       <template v-if="!readonly && authStore.user && !authStore.isGuest">
         <v-btn
           :aria-pressed="myReaction === true"
@@ -90,6 +92,7 @@
   import { computed, onMounted, ref } from 'vue'
   import { useRoute } from 'vue-router'
   import RecommendationExplanation from '@/components/RecommendationExplanation.vue'
+  import { requestRegistration } from '@/lib/registrationPrompt'
   import { natureLabel } from '@/lib/classification'
   import { removePost, saveReaction } from '@/lib/offers'
   import { searchParam } from '@/lib/postSearch'

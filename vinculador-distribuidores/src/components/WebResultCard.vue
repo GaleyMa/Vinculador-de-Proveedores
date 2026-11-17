@@ -6,7 +6,8 @@
 
     <v-btn
       append-icon="mdi-open-in-new"
-      :href="result.url"
+      :href="canOpen ? result.url : undefined"
+      @click="gateSource"
       rel="noopener noreferrer"
       target="_blank"
       variant="tonal"
@@ -14,6 +15,14 @@
   </v-card>
 </template>
 <script setup>
+  import { computed } from 'vue'
+  import { useAuthStore } from '@/stores/auth'
+  import { requestRegistration } from '@/lib/registrationPrompt'
+  const auth = useAuthStore()
+  const canOpen = computed(() => auth.user && !auth.isGuest)
+  function gateSource(event) {
+    if (!canOpen.value) { event.preventDefault(); requestRegistration() }
+  }
   defineProps({result:{type:Object,required:true}})
 </script>
 <style scoped>
