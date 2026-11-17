@@ -66,6 +66,10 @@ test('Pantallas Vue y sesiones: clasificación, fuentes y recuperación de acces
       const html = await render(NavBar,{},pinia)
       assert.doesNotMatch(html,/href="\/publicar"/)
       assert.match(html,/href="\/asistente"/)
+      assert.doesNotMatch(html,/href="\/(perfiles|necesidades|feed)"/)
+      const web = await render(WebCard,{result:{title:'Cajas',source:'example.test',url:'https://example.test',content:'Oferta externa'}},pinia)
+      assert.doesNotMatch(web,/href="https:\/\/example.test"/)
+      assert.match(web,/example.test/)
     })
     await t.test('Inicialización simultánea comparte petición y suscripción; callback Auth no devuelve promesa', async () => {
       const {auth} = setup('cliente')

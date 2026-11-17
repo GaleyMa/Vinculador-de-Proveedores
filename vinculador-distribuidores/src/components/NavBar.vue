@@ -25,6 +25,8 @@
     <v-spacer />
     <v-btn v-if="authStore.user && !authStore.isGuest && mdAndUp" class="mr-2" prepend-icon="mdi-plus" to="/publicar">Publicar</v-btn>
 
+    <v-btn v-if="!authStore.user || authStore.isGuest" class="mr-2" to="/register">Crear cuenta</v-btn>
+
     <!-- Menú de cuenta: aquí vive "Cerrar sesión" -->
     <v-btn v-if="!authStore.user || authStore.isGuest" to="/login" variant="tonal">Iniciar sesión</v-btn>
 
@@ -104,8 +106,8 @@
   const items = [
     { label: 'Explorar', icon: 'mdi-magnify', to: '/', match: p => p === '/', guest: true },
     { label: 'Para tu empresa', icon: 'mdi-compass-outline', to: '/feed', match: p => p === '/feed' },
-    { label: 'Empresas', icon: 'mdi-domain', to: '/perfiles', match: p => p === '/perfiles' || p.startsWith('/usuario/'), guest: true },
-    { label: 'Necesidades', icon: 'mdi-clipboard-text-outline', to: '/necesidades', match: p => p.startsWith('/necesidades'), guest: true },
+    { label: 'Empresas', icon: 'mdi-domain', to: '/perfiles', match: p => p === '/perfiles' || p.startsWith('/usuario/') },
+    { label: 'Necesidades', icon: 'mdi-clipboard-text-outline', to: '/necesidades', match: p => p.startsWith('/necesidades') },
     { label: 'Asistente', icon: 'mdi-creation', to: '/asistente', guest: true, match: p => p === '/asistente' },
     { label: 'Publicar', icon: 'mdi-plus-circle-outline', to: '/publicar', match: p => p === '/publicar' },
     { label: 'Mi empresa', icon: 'mdi-office-building-outline', to: '/perfil', match: p => p === '/perfil' },

@@ -1,51 +1,43 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { guestBrowseTarget, prepareGuestAccess, routeAccess } from '../src/lib/routeAccess.js'
+import { guestBrowseTarget, prepareGuestAccess, requiresRegistration, routeAccess } from '../src/lib/routeAccess.js'
 
-test('Las rutas de exploración crean sesión invitada y permiten continuar', async () => {
-  for (const path of ['/feed', '/perfiles', '/necesidades', '/usuario/provider']) {
-    let calls = 0
-    const auth = {
-      user: null,
-      get isGuest() { return this.user?.is_anonymous === true },
-      async enterAsGuest() { calls++; this.user = { id: 'guest', is_anonymous: true } },
+test('Solo portada y búsqueda IA quedan disponibles al público, incluso con metadata antigua', async () => {
+  for (const user of [null, {id:'guest',is_anonymous:true}]) {
+    const auth = {user,isGuest:Boolean(user)}
+    for (const path of ['/','/asistente','/login','/register']) {
+      assert.equal(requiresRegistration(auth,{path}),false)
+      assert.equal(routeAccess(auth,{path}),true)
     }
-    const to = { path, meta: { guestOk: true } }
-    await prepareGuestAccess(auth, to)
-    assert.equal(calls, 1)
-    assert.equal(routeAccess(auth, to), true)
-    await prepareGuestAccess(auth, to)
-    assert.equal(calls, 1)
+    for (const path of ['/feed','/perfiles','/usuario/provider','/necesidades','/necesidades/id','/publicar','/perfil']) {
+      const to = {path,meta:{guestOk:true}}
+      assert.equal(requiresRegistration(auth,to),true)
+      assert.notEqual(routeAccess(auth,to),true)
+    }
   }
 })
-
-test('La portada y las rutas privadas no crean sesiones de invitado', async () => {
-  let calls = 0
-  const auth = { user: null, async enterAsGuest() { calls++ } }
-  await prepareGuestAccess(auth, { path: '/', meta: { guestOk: true } })
-  for (const path of ['/publicar', '/perfil', '/asistente']) {
-    await prepareGuestAccess(auth, { path })
-    assert.equal(routeAccess(auth, { path }), '/login')
+test('Solo el asistente crea sesión técnica y conserva las sesiones existentes', async () => {
+  let calls=0
+  const auth={user:null,async enterAsGuest(){calls++;this.user={id:'guest'}}}
+  for (const path of ['/','/perfiles','/feed']) await prepareGuestAccess(auth,{path,meta:{guestOk:true}})
+  assert.equal(calls,0)
+  await prepareGuestAccess(auth,{path:'/asistente'})
+  await prepareGuestAccess(auth,{path:'/asistente'})
+  assert.equal(calls,1)
+})
+test('Cuentas registradas conservan acceso a empresas y publicaciones', () => {
+  const auth={user:{id:'member'},isGuest:false,needsProfile:false}
+  for (const path of ['/feed','/perfiles','/usuario/provider','/necesidades','/publicar']) {
+    assert.equal(requiresRegistration(auth,{path}),false)
+    assert.equal(routeAccess(auth,{path}),true)
   }
-  assert.equal(calls, 0)
 })
-
-test('Una sesión real conserva su identidad al navegar por rutas públicas', async () => {
-  const auth = { user: { id: 'member' }, async enterAsGuest() { assert.fail('No reemplazar una sesión real') } }
-  await prepareGuestAccess(auth, { path: '/perfiles', meta: { guestOk: true } })
-  assert.equal(auth.user.id, 'member')
+test('El fallo de sesión técnica se propaga', async () => {
+  await assert.rejects(prepareGuestAccess({user:null,async enterAsGuest(){throw new Error('disabled')}},{path:'/asistente'}),/disabled/)
 })
-
-test('El fallo del acceso anónimo se propaga para informar al usuario', async () => {
-  const auth = { user: null, async enterAsGuest() { throw new Error('Anonymous sign-ins disabled') } }
-  await assert.rejects(prepareGuestAccess(auth, { path: '/perfiles', meta: { guestOk: true } }), /disabled/)
-  assert.equal(auth.user, null)
-})
-
-test('El botón invitado abre ofertas o retoma una ruta de exploración segura', () => {
-  const resolve = path => ({ path: path.split('?')[0], fullPath: path, meta: { guestOk: ['/perfiles', '/feed'].includes(path.split('?')[0]) } })
-  assert.equal(guestBrowseTarget(resolve), '/feed')
-  assert.equal(guestBrowseTarget(resolve, '/'), '/feed')
-  assert.equal(guestBrowseTarget(resolve, '/perfiles?q=cajas'), '/perfiles?q=cajas')
-  for (const path of ['https://example.com', '//example.com', '/publicar', '/asistente']) assert.equal(guestBrowseTarget(resolve, path), '/feed')
+test('Explorar sin cuenta vuelve a búsqueda pública, nunca al directorio o feed', () => {
+  const resolve=path=>({path:path.split('?')[0],fullPath:path,meta:{guestOk:true}})
+  for(const path of [undefined,'/feed','/perfiles','/usuario/id','//example.com','https://example.com']) assert.equal(guestBrowseTarget(resolve,path),'/')
+  assert.equal(guestBrowseTarget(resolve,'/?q=cajas'),'/?q=cajas')
+  assert.equal(guestBrowseTarget(resolve,'/asistente'),'/asistente')
 })

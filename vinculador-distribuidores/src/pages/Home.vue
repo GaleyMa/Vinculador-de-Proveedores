@@ -5,8 +5,7 @@
       <p v-else role="status">Preparando tu búsqueda…</p>
     </v-container>
 
-    <Assistant v-else-if="route.query.q" :key="String(route.query.q)" auto-search :initial-query="String(route.query.q)" />
-    <Feed v-else />
+    <Assistant v-else :key="JSON.stringify(route.query)" auto-search :initial-query="String(route.query.q || route.query.tag || '')" :initial-nature="String(route.query.nature || '')" :initial-sector="String(route.query.sector || '')" />
   </template>
 
   <v-container v-else class="home-page" max-width="1180">
@@ -64,7 +63,6 @@
   import mantenimiento from '@/assets/home/mantenimiento.webp'
   import transporte from '@/assets/home/transporte.webp'
   import Assistant from '@/pages/Assistant.vue'
-  import Feed from '@/pages/Feed.vue'
   import { useAuthStore } from '@/stores/auth'
   const auth = useAuthStore(), route = useRoute(), router = useRouter()
   const query = ref(''), error = ref('')

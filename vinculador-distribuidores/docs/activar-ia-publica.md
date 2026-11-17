@@ -20,3 +20,9 @@ Las variables de Supabase en Vercel son la URL y la clave pública. Las claves d
 ## Verificación local
 
 23 pruebas de ofertas/asistente, una prueba de migración de cuota para visitantes y cinco de navegación invitada aprobadas; compilación correcta. Los servicios externos y las sesiones remotas se simularon. La comprobación en el proyecto real requiere los pasos anteriores.
+
+## Alcance público y registro
+
+El visitante solo accede a portada, formulario del asistente y resultados de búsqueda sin personalización. Directorios, perfiles empresariales, necesidades y feed requieren registro. Ver empresa, Me interesa y consultar una fuente externa abren una invitación a registrarse; cerrar la ventana conserva los resultados. Las fuentes externas siguen identificadas en la tarjeta. Los filtros por rubro abren el formulario con el rubro seleccionado; no consultan recomendaciones personalizadas.
+
+Esta entrega restringe la navegación del cliente. El equipo con acceso a Supabase debe revisar las políticas SELECT de perfiles, necesidades y las RPC existentes para impedir consultas directas de usuarios is_anonymous, manteniendo candidate_offers como proyección mínima de resultados. No se afirma que ocultar rutas impida leer datos mediante la API. Deben validarse esas políticas en el proyecto real antes de considerar completa la restricción de datos.

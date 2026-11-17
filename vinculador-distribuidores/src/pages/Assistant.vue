@@ -55,8 +55,8 @@
   import WebResultCard from '@/components/WebResultCard.vue'
   import { candidateOffers } from '@/lib/offers'
   import { supabase } from '@/lib/supabase'
-  const props = defineProps({ initialQuery: { type: String, default: '' }, autoSearch: Boolean })
-  const query = ref(props.initialQuery), nature = ref(null), sectorId = ref(null)
+  const props = defineProps({ initialQuery: { type: String, default: '' }, initialNature: { type: String, default: '' }, initialSector: { type: String, default: '' }, autoSearch: Boolean })
+  const query = ref(props.initialQuery), nature = ref(props.initialNature || null), sectorId = ref(props.initialSector || null)
   const useAI = ref(true), useWeb = ref(false), loading = ref(false), searched = ref(false), webRequested = ref(false)
   const offers = ref([]), web = ref([]), warnings = ref([]), summary = ref(''), error = ref('')
   let version = 0
