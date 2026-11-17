@@ -7,7 +7,7 @@
     </header>
 
     <section v-if="submittedQuery" aria-label="Tu búsqueda" class="search-results-heading">
-      <div><p class="text-caption text-muted">TU BÚSQUEDA</p><h2>Opciones para “{{ submittedQuery }}”</h2><p v-if="searched && !loading" class="text-caption text-muted">{{ offers.length + web.length }} resultados disponibles en esta consulta</p></div>
+      <div><p class="text-caption text-muted">TU BÚSQUEDA</p><h2>Opciones para “{{ submittedQuery }}”</h2><p v-if="resultCaption" class="text-caption text-muted">{{ resultCaption }}</p></div>
       <v-btn :disabled="loading" prepend-icon="mdi-pencil-outline" variant="outlined" @click="editSearch">Cambiar búsqueda</v-btn>
     </section>
 
@@ -110,7 +110,7 @@
         <div v-for="(offer, index) in offers" :key="offer.id"><p class="text-caption text-muted mb-2">Opción {{ index + 1 }} · En SunFinder</p><PostCard :post="offer" @deleted="offers = offers.filter(item => item.id !== $event)" /></div>
       </template>
 
-      <section v-if="webRequested" aria-labelledby="web-results-title">
+      <section v-if="webRequested && (web.length > 0 || warnings.length === 0)" aria-labelledby="web-results-title">
         <div class="section-intro mt-5"><div><h2 id="web-results-title" class="text-h6">Resultados de la web</h2><p class="text-caption text-muted mt-1">Información de fuentes externas. Estos negocios no están verificados por SunFinder.</p></div></div>
         <div v-if="web.length === 0 && warnings.length === 0" class="search-empty"><v-icon color="secondary" icon="mdi-web" size="32" /><h3>No encontramos opciones web para esta consulta</h3><p>Prueba con un producto o servicio más general. También puedes ajustar los filtros.</p><v-btn variant="outlined" @click="editSearch">Probar otra búsqueda</v-btn></div>
         <div class="search-result-grid"><WebResultCard v-for="(result, index) in web" :key="result.url" :number="index + 1" :result="result" /></div>
@@ -119,11 +119,12 @@
   </v-container>
 </template>
 <script setup>
-  import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
   import OfferFilters from '@/components/OfferFilters.vue'
   import PostCard from '@/components/PostCard.vue'
   import WebResultCard from '@/components/WebResultCard.vue'
   import { candidateOffers } from '@/lib/offers'
+  import { describeAssistantError, searchResultCaption } from '@/lib/searchFeedback'
   import { supabase } from '@/lib/supabase'
   const props = defineProps({ initialQuery: { type: String, default: '' }, initialNature: { type: String, default: '' }, initialSector: { type: String, default: '' }, publicSearch: Boolean, autoSearch: Boolean })
   const query = ref(props.initialQuery), nature = ref(props.initialNature || null), sectorId = ref(props.initialSector || null)
@@ -139,6 +140,7 @@
     queryField.value?.$el?.scrollIntoView?.({ block: 'center', behavior: 'auto' })
   }
   function searchExample(example) { query.value = example; search() }
+  const resultCaption = computed(() => searchResultCaption({ loading: loading.value, searched: searched.value, error: error.value, warnings: warnings.value, count: offers.value.length + web.value.length }))
   let version = 0
   onBeforeUnmount(() => { version++ })
   onMounted(() => { if (props.autoSearch && String(query.value || '').trim().length >= 3) search() })
@@ -162,9 +164,8 @@
         const { data, error: invokeError } = await supabase.functions.invoke('supplier-assistant', { body: input })
         if (current !== version) return
         if (invokeError) {
-          let message = props.publicSearch ? 'No pudimos consultar la web en este momento. Intenta de nuevo.' : 'El asistente no está disponible. Puedes consultar las ofertas internas.'
-          try { message = (await invokeError.context.json()).error || message } catch { /* Error de conexión o función todavía no desplegada. */ }
-          warnings.value = [message]
+          warnings.value = [await describeAssistantError(invokeError, { publicSearch: props.publicSearch })]
+          if (current !== version) return
         } else {
           offers.value = data.offers || local
           web.value = data.web || []
@@ -179,3 +180,4 @@
 <style scoped>
   .summary { white-space: pre-wrap; }
 </style>
+
