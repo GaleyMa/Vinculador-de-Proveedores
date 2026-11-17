@@ -21,3 +21,9 @@ Pruebas locales: test:offers (22), test:recommendations (18), test:classificatio
 Pendiente en Vercel Preview: revisar escritorio, tableta y móvil, búsqueda como invitado, reacciones, descripción expandida, scroll de recomendaciones, contacto, y consultas al asistente con el proyecto real. No se completó la prueba visual en navegador local porque Chromium no pudo iniciarse por las restricciones del entorno.
 
 El archivo vercel.json añade la resolución de rutas Vue al recargar enlaces directos. Las variables de Supabase ya utilizadas por el proyecto deben mantenerse en el despliegue.
+
+## Arranque del Preview
+
+La portada se renderiza aunque falten las variables VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY o su configuración sea inválida. Se muestra un aviso visible y no se usan credenciales de ejemplo ni se simula una base conectada. Para probar búsquedas reales, ambas variables deben estar disponibles en el entorno Preview de Vercel y debe generarse un nuevo despliegue.
+
+La sesión también puede fallar temporalmente; el router permite volver al inicio y la aplicación ofrece reintentar la conexión, en lugar de dejar la navegación inicial sin resolver. La prueba tests/preview-without-supabase.test.js comprueba la importación, inicialización y renderizado de App y Home con configuración vacía.

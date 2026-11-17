@@ -87,7 +87,10 @@ const router = createRouter({
 })
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
-  if (authStore.loading) {await authStore.init()}
+  if (authStore.loading) {
+    try { await authStore.init() }
+    catch { return to.path === '/' ? true : '/' }
+  }
 
   return routeAccess(authStore, to)
 })

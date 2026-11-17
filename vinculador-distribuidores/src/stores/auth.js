@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/no-this-outside-of-class -- Pinia Options Store expone el estado mediante this. */
 import { defineStore } from 'pinia'
-import { supabase } from '@/lib/supabase'
+import { supabase, supabaseConfigured } from '@/lib/supabase'
 
 const initializations = new WeakMap()
 const subscriptions = new WeakMap()
@@ -27,6 +27,12 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     async init() {
+      if (!supabaseConfigured) {
+        this.user = null
+        this.profile = null
+        this.loading = false
+        return
+      }
       if (initializations.has(this)) {return initializations.get(this)}
       if (!this.loading && subscriptions.has(this)) {return}
       const pending = (async () => {
