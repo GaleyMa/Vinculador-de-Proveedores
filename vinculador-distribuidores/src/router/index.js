@@ -6,7 +6,7 @@
 
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
-import { routeAccess } from '@/lib/routeAccess'
+import { prepareGuestAccess, routeAccess } from '@/lib/routeAccess'
 import CreatePost from '@/pages/CreatePost.vue'
 import Feed from '@/pages/Feed.vue'
 import Login from '@/pages/Login.vue'
@@ -92,6 +92,11 @@ router.beforeEach(async (to) => {
     catch { return to.path === '/' ? true : '/' }
   }
 
+  try {
+    await prepareGuestAccess(authStore, to)
+  } catch {
+    return { path: '/login', query: { guest: 'unavailable', next: to.fullPath } }
+  }
   return routeAccess(authStore, to)
 })
 
