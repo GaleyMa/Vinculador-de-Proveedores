@@ -1,20 +1,20 @@
 <template>
-  <v-container max-width="700" v-if="profile">
-    <v-card class="pa-6 mb-6">
+  <v-container max-width="1000" class="company-page" v-if="profile">
+    <v-card class="pa-6 mb-6 company-profile">
       <div class="d-flex align-center">
         <v-avatar size="64" color="primary" class="mr-4">
           <v-img v-if="profile.avatar_url" :src="profile.avatar_url" />
           <v-icon v-else size="36">mdi-account</v-icon>
         </v-avatar>
         <div>
-          <div class="text-h5">{{ profile.full_name }}</div>
+          <h1 class="text-h5 company-name">{{ profile.full_name }}</h1>
             <v-chip size="small" :color="ROLE_COLORS[profile.role]">
               {{ ROLE_LABELS[profile.role] }}
             </v-chip>
         </div>
       </div>
       <ProviderClassification v-if="canClassify(profile.role)" :key="profile.id" :profile-id="profile.id" />
-      <p v-if="profile.bio" class="mt-4">{{ profile.bio }}</p>
+      <h2 class="text-subtitle-1 font-weight-bold mt-5">Sobre la empresa</h2><p v-if="profile.bio" class="mt-2">{{ profile.bio }}</p>
 
       <div v-if="tags.length" class="mt-3">
         <v-chip
@@ -45,7 +45,7 @@
 
     </v-card>
 
-    <div class="text-h6 mb-3">Publicaciones</div>
+    <div class="text-h6 mb-3">Ofertas y necesidades</div>
     <v-progress-circular v-if="loading" indeterminate class="d-block mx-auto" />
     <PostCard v-for="post in posts" :key="post.id" :post="post" readonly />
   </v-container>

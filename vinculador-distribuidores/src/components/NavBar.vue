@@ -1,10 +1,11 @@
 <template>
   <v-app-bar>
-    <RouterLink aria-label="Sun Finder, ir a Recomendaciones" class="brand" to="/">
+    <RouterLink aria-label="SunFinder, ir al inicio" class="brand" to="/">
       <v-avatar color="primary" rounded="lg" size="36" variant="tonal">
-        <v-img :src="logo" alt="Icono" />
+        <v-img alt="Icono" :src="logo" />
       </v-avatar>
-      <span>Sun Finder</span>
+
+      <span>SunFinder</span>
     </RouterLink>
 
     <!-- Escritorio: opciones con texto -->
@@ -22,12 +23,20 @@
     </nav>
 
     <v-spacer />
+    <v-btn v-if="authStore.user && !authStore.isGuest && mdAndUp" class="mr-2" prepend-icon="mdi-plus" to="/publicar">Publicar</v-btn>
 
     <!-- Menú de cuenta: aquí vive "Cerrar sesión" -->
-    <v-btn v-if="authStore.isGuest" to="/login" variant="tonal">Iniciar sesión</v-btn>
+    <v-btn v-if="!authStore.user || authStore.isGuest" to="/login" variant="tonal">Iniciar sesión</v-btn>
+
     <v-menu v-else>
       <template #activator="{ props: menuProps }">
-        <v-btn v-bind="menuProps" aria-label="Menú de cuenta" class="account" icon variant="text">
+        <v-btn
+          v-bind="menuProps"
+          aria-label="Menú de cuenta"
+          class="account"
+          icon
+          variant="text"
+        >
           <v-avatar color="primary" size="36" variant="tonal">
             <v-img
               v-if="authStore.profile?.avatar_url"
@@ -35,6 +44,7 @@
               cover
               :src="authStore.profile.avatar_url"
             />
+
             <span v-else class="text-body-2 font-weight-bold">{{ userInitials }}</span>
           </v-avatar>
         </v-btn>
@@ -43,6 +53,7 @@
       <v-list min-width="220">
         <v-list-item :subtitle="roleLabel" :title="authStore.profile?.full_name || 'Mi cuenta'" />
         <v-divider />
+        <v-list-item prepend-icon="mdi-compass-outline" title="Para tu empresa" to="/feed" />
         <v-list-item prepend-icon="mdi-plus-circle-outline" title="Publicar" to="/publicar" />
         <v-list-item prepend-icon="mdi-office-building-outline" title="Mi empresa" to="/perfil" />
         <v-list-item prepend-icon="mdi-logout" title="Cerrar sesión" @click="logout" />
@@ -61,11 +72,18 @@
     :mandatory="false"
     tag="nav"
   >
-    <v-btn v-for="item in mobileItems" :key="item.to" :aria-label="item.label" :to="item.to" :value="item.to">
+    <v-btn
+      v-for="item in mobileItems"
+      :key="item.to"
+      :aria-label="item.label"
+      :to="item.to"
+      :value="item.to"
+    >
       <v-icon :icon="item.icon" />
       <span>{{ item.to === '/' ? 'Inicio' : item.to === '/perfiles' ? 'Empresas' : item.label }}</span>
     </v-btn>
   </v-bottom-navigation>
+
   <v-snackbar v-model="logoutError" color="error">No se pudo cerrar sesión. Intenta de nuevo.</v-snackbar>
 </template>
 
@@ -84,8 +102,9 @@
   const { mdAndUp } = useDisplay()
 
   const items = [
-    { label: 'Recomendaciones', icon: 'mdi-compass-outline', to: '/', match: p => p === '/' || p === '/feed', guest: true },
-    { label: 'Buscar empresas', icon: 'mdi-domain', to: '/perfiles', match: p => p === '/perfiles' || p.startsWith('/usuario/'), guest: true },
+    { label: 'Explorar', icon: 'mdi-magnify', to: '/', match: p => p === '/', guest: true },
+    { label: 'Para tu empresa', icon: 'mdi-compass-outline', to: '/feed', match: p => p === '/feed' },
+    { label: 'Empresas', icon: 'mdi-domain', to: '/perfiles', match: p => p === '/perfiles' || p.startsWith('/usuario/'), guest: true },
     { label: 'Necesidades', icon: 'mdi-clipboard-text-outline', to: '/necesidades', match: p => p.startsWith('/necesidades'), guest: true },
     { label: 'Asistente', icon: 'mdi-creation', to: '/asistente', match: p => p === '/asistente' },
     { label: 'Publicar', icon: 'mdi-plus-circle-outline', to: '/publicar', match: p => p === '/publicar' },
@@ -93,8 +112,8 @@
   ]
 
   const activeItem = computed(() => items.find(item => item.match(route.path)))
-  const visibleItems = computed(() => items.filter(item => !authStore.isGuest || item.guest))
-  const mobileItems = computed(() => visibleItems.value.filter(item => !['/publicar', '/perfil'].includes(item.to)))
+  const visibleItems = computed(() => items.filter(item => item.to !== '/perfil' && item.to !== '/publicar' && item.to !== '/feed' && (authStore.user && !authStore.isGuest || item.guest)))
+  const mobileItems = computed(() => visibleItems.value.filter(item => !['/publicar', '/perfil', '/feed'].includes(item.to)))
   const bottomValue = computed({
     get: () => activeItem.value?.to ?? null,
     set: () => {},   // la ruta manda; el router cambia la sección

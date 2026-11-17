@@ -67,3 +67,32 @@ a:not([class^='v-']):not([class*=' v-']) {
   box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.12);
   font-size: 0.875rem;
 }
+/* Inicio y presentación compartida */
+.eyebrow{font-size:.75rem;font-weight:750;letter-spacing:.12em;color:rgb(var(--v-theme-secondary));margin-bottom:12px}
+.home-page{padding-top:32px;padding-bottom:32px}
+.home-hero{display:grid;grid-template-columns:1.05fr 1fr;background:rgb(var(--v-theme-surface));border:1px solid rgb(var(--v-border-color));border-radius:24px;overflow:hidden}
+.home-copy{padding:48px}
+.home-copy h1{font-size:clamp(2rem,3.5vw,3.2rem);line-height:1.12;letter-spacing:-.045em;margin-bottom:18px}
+.hero-description{color:rgb(var(--v-theme-muted));font-size:1.05rem;line-height:1.65;margin-bottom:26px}
+.home-copy label{display:block;font-weight:650;margin-bottom:8px}
+.home-search{display:flex;gap:8px;flex-wrap:wrap}.home-search input{flex:1;min-width:0;flex-basis:210px;border:1px solid rgb(var(--v-theme-muted));border-radius:10px;padding:12px;font:inherit;background:rgb(var(--v-theme-surface))}
+.home-search input:focus-visible{outline:3px solid rgba(var(--v-theme-secondary),.4);outline-offset:2px}
+.home-note{font-size:.85rem;color:rgb(var(--v-theme-muted));margin-top:16px}
+.home-visual{min-height:380px;position:relative}.home-visual>img{position:absolute;width:100%;height:100%;object-fit:cover}
+.home-photo-caption{position:absolute;bottom:22px;left:20px;right:20px;padding:14px;background:rgb(var(--v-theme-surface));border-radius:12px;display:flex;align-items:center;gap:12px;font-size:.85rem}
+.home-photo-caption p{color:rgb(var(--v-theme-muted));margin:3px 0 0}.photo-dot{width:12px;height:12px;background:rgb(var(--v-theme-secondary));border-radius:100%;flex-shrink:0}
+.home-categories{margin-top:40px}.section-intro{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px}.section-intro h2{font-size:1.6rem;line-height:1.2}.section-intro p:last-child{color:rgb(var(--v-theme-muted))}
+.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.category-card{border:1px solid rgb(var(--v-border-color));background:rgb(var(--v-theme-surface));border-radius:16px;overflow:hidden;text-decoration:none;transition:transform .2s}
+.category-card:hover{transform:translateY(-3px)}.category-card img{width:100%;aspect-ratio:2;object-fit:cover;display:block}.category-card>div{padding:16px;display:flex;justify-content:space-between;font-weight:700}
+.home-help{margin-top:36px;display:flex;align-items:center;gap:18px;padding:24px;border:1px solid rgb(var(--v-border-color));border-radius:16px;background:rgba(var(--v-theme-secondary),.04)}.home-help>div{flex:1}.home-help h2{font-size:1.1rem;margin-bottom:4px}.home-help p,.home-footer{font-size:.9rem;color:rgb(var(--v-theme-muted))}.home-footer{text-align:center;margin-top:30px}
+.assistant-page{padding-top:32px}.assistant-form{padding:24px;border:1px solid rgb(var(--v-border-color));border-radius:16px;background:rgb(var(--v-theme-surface));margin-bottom:24px}.assistant-summary{padding:24px;background:rgba(var(--v-theme-secondary),.07);border-radius:16px}.assistant-loading{display:flex;gap:14px;align-items:center;padding:20px}
+.company-profile>div.mt-4{padding-top:16px;border-top:1px solid rgb(var(--v-border-color))}
+@media(max-width:960px){.home-copy{padding:28px}.home-hero{grid-template-columns:1fr 1fr}.home-help{flex-wrap:wrap}.desktop-break{display:none}}
+@media(max-width:700px){.home-page{padding:16px}.home-hero{grid-template-columns:1fr}.home-copy{padding:24px}.home-search .v-btn{width:100%}.home-visual{min-height:230px}.home-copy h1{font-size:2.1rem}.category-grid{grid-template-columns:1fr;gap:12px}.category-card{display:flex;align-items:center}.category-card img{width:115px;height:85px}.category-card>div{flex:1}.section-intro{display:block}.section-intro>p{margin-top:8px}.home-categories{margin-top:28px}.home-help{padding:18px;align-items:flex-start}.home-help .v-btn{width:100%}.assistant-form{padding:16px}}
+@media(prefers-reduced-motion:reduce){.category-card{transition:none}}
+
+.company-name{overflow-wrap:anywhere}
+.company-profile .v-avatar{flex-shrink:0}
+@media(min-width:900px){.company-profile{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0 32px}.company-profile>div:first-child,.company-profile>section{grid-column:1/-1}}
+@media(max-width:1050px) and (min-width:960px){.main-nav{gap:0!important}.main-nav .v-btn{padding-inline:9px}.brand{margin-inline:10px 12px!important}}

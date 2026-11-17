@@ -1,6 +1,7 @@
 // Compartido por el router y las pruebas de acceso directo.
 export function routeAccess(auth, to) {
   const publicPage = ['/login', '/register'].includes(to.path)
+  if (to.path === '/' && (!auth.user || auth.isGuest)) {return true}
   if (!auth.user) {return publicPage ? true : '/login'}
   if (auth.isGuest) {return publicPage || to.meta?.guestOk ? true : '/'}
   if (auth.needsProfile) {return to.path === '/completar-perfil' ? true : '/completar-perfil'}

@@ -1,6 +1,7 @@
 <template>
   <v-app>
-    <NavBar v-if="authStore.user && !authStore.needsProfile" />
+    <NavBar v-if="!authStore.needsProfile" />
+
     <v-main>
       <RouterView />
     </v-main>
@@ -9,10 +10,10 @@
 
 <!-- src/App.vue -->
 <script setup>
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import NavBar from '@/components/NavBar.vue'
+  import { onMounted } from 'vue'
+  import NavBar from '@/components/NavBar.vue'
+  import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
-onMounted(() => authStore.init())
+  const authStore = useAuthStore()
+  onMounted(() => authStore.init())
 </script>

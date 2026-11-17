@@ -5,7 +5,7 @@
         clearable
         hide-details
         :items="NATURES"
-        label="Naturaleza de la oferta"
+        label="Productos o servicios"
         :model-value="nature"
         @update:model-value="$emit('update:nature', $event)"
       />
@@ -16,7 +16,7 @@
         item-title="name"
         item-value="id"
         :items="sectors"
-        label="Rubro de la oferta"
+        label="Rubro"
         :loading="loading"
         :model-value="sectorId"
         @update:model-value="$emit('update:sector-id', $event)"

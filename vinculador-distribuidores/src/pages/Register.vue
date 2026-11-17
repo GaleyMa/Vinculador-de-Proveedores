@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height" max-width="480">
     <v-card class="pa-6" width="100%">
-      <v-card-title>Crear cuenta</v-card-title>
+      <h1 class="page-title mb-2">Crea tu cuenta en SunFinder</h1><p class="text-muted mb-5">Da a conocer tu empresa y encuentra nuevas oportunidades.</p>
       <v-form @submit.prevent="handleRegister">
         <v-text-field v-model="fullName" label="Nombre completo" required />
         <v-text-field v-model="email" label="Correo" type="email" required />
