@@ -5,6 +5,7 @@
       <p v-else role="status">Preparando tu búsqueda…</p>
     </v-container>
 
+    <Assistant v-else-if="route.query.q" :key="String(route.query.q)" auto-search :initial-query="String(route.query.q)" />
     <Feed v-else />
   </template>
 
@@ -30,6 +31,7 @@
             <v-btn size="large" type="submit">Buscar <v-icon end icon="mdi-arrow-right" /></v-btn></div>
         </form>
 
+        <p class="home-note">La búsqueda usa IA para ayudarte a comparar ofertas. Se envía tu consulta al servicio; evita incluir datos confidenciales.</p>
         <p v-if="!auth.user || auth.isGuest" class="home-note"><v-icon icon="mdi-check-circle-outline" size="16" /> Puedes explorar sin crear una cuenta.</p>
         <RouterLink v-else class="home-note d-inline-block" to="/feed">Ver recomendaciones para tu empresa →</RouterLink>
       </div>
@@ -50,7 +52,7 @@
       </div>
     </section>
 
-    <section class="home-help"><v-icon icon="mdi-creation-outline" size="28" /><div><h2>¿No sabes por dónde empezar?</h2><p>Cuéntale al asistente qué necesitas y explora opciones dentro y fuera de SunFinder.</p></div><v-btn :to="!auth.user || auth.isGuest ? '/login' : '/asistente'" variant="outlined">Buscar con ayuda</v-btn></section>
+    <section class="home-help"><v-icon icon="mdi-creation-outline" size="28" /><div><h2>¿No sabes por dónde empezar?</h2><p>Cuéntale al asistente qué necesitas y explora opciones dentro y fuera de SunFinder.</p></div><v-btn to="/asistente" variant="outlined">Buscar con ayuda</v-btn></section>
     <p class="home-footer">SunFinder · Nuevas conexiones, más oportunidades.</p>
   </v-container>
 </template>
@@ -61,6 +63,7 @@
   import hero from '@/assets/home/hero.webp'
   import mantenimiento from '@/assets/home/mantenimiento.webp'
   import transporte from '@/assets/home/transporte.webp'
+  import Assistant from '@/pages/Assistant.vue'
   import Feed from '@/pages/Feed.vue'
   import { useAuthStore } from '@/stores/auth'
   const auth = useAuthStore(), route = useRoute(), router = useRouter()

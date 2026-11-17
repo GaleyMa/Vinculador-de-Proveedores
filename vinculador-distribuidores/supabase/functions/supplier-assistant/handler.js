@@ -33,7 +33,6 @@ export function createHandler({ env, createClient, fetchImpl }) {
       })
       const { data: { user }, error: authError } = await client.auth.getUser(authorization.slice(7))
       if (authError || !user) return reply({ error: 'Sesión no válida.' }, 401)
-      if (user.is_anonymous) return reply({ error: 'El asistente requiere una cuenta registrada.' }, 403)
       const raw = await req.text()
       if (raw.length > 4000) return reply({ error: 'Consulta demasiado larga.' }, 400)
       let input

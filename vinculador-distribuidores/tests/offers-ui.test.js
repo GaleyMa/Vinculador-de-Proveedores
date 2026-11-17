@@ -56,14 +56,16 @@ test('Pantallas Vue y sesiones: clasificación, fuentes y recuperación de acces
       assert.match(html,/Asistente de proveedores/)
       assert.match(html,/Ayudarme a comparar los resultados/)
       assert.match(html,/Incluir opciones de la web/)
-      assert.doesNotMatch(html,/checked=""/)
+      const webInput = html.match(/<input[^>]*aria-label="Incluir opciones de la web"[^>]*>/)?.[0]
+      assert.ok(webInput)
+      assert.doesNotMatch(webInput,/checked/)
     })
-    await t.test('Invitado no ve publicar ni asistente en la navegación', async () => {
+    await t.test('Invitado puede consultar el asistente pero no publicar', async () => {
       const {pinia,auth} = setup('cliente')
       auth.user = {id:'guest',is_anonymous:true}
       const html = await render(NavBar,{},pinia)
       assert.doesNotMatch(html,/href="\/publicar"/)
-      assert.doesNotMatch(html,/href="\/asistente"/)
+      assert.match(html,/href="\/asistente"/)
     })
     await t.test('Inicialización simultánea comparte petición y suscripción; callback Auth no devuelve promesa', async () => {
       const {auth} = setup('cliente')

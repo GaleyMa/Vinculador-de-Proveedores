@@ -164,9 +164,9 @@ function assistantFixture({ user = {id:'u'}, secrets = {}, quota = true, fetchIm
     handler(new Request('https://example.test',{method:'POST',headers:headers ?? {authorization:'Bearer token'},body:JSON.stringify(input ?? {query:'cajas'})}))
   return {request,calls}
 }
-test('Edge: rechaza sesiones ausentes, invitados, datos inválidos y exceso de cuota antes de APIs', async () => {
+test('Edge: rechaza sesiones ausentes, datos inválidos y exceso de cuota antes de APIs', async () => {
   assert.equal((await assistantFixture().request({query:'cajas'},{})).status,401)
-  assert.equal((await assistantFixture({user:{is_anonymous:true}}).request()).status,403)
+  assert.equal((await assistantFixture({user:{id:'guest',is_anonymous:true}}).request()).status,200)
   assert.equal((await assistantFixture().request({query:'x'})).status,400)
   const limited = assistantFixture({quota:false,secrets:{TAVILY_API_KEY:'secret'}})
   assert.equal((await limited.request({query:'cajas',web:true})).status,429)
@@ -197,4 +197,24 @@ test('Edge: Tavily y Gemini reciben contratos correctos, citas y datos limitados
 test('Fuentes externas excluyen URLs ejecutables, credenciales y duplicados', () => {
   const rows = safeWebResults([{url:'javascript:alert(1)'},{url:'https://user:pass@example.com'},{url:'https://example.com'},{url:'https://example.com'}])
   assert.equal(rows.length,1)
+})
+
+
+test('Edge: invitado consulta IA con cuota y sin preferencias del perfil', async () => {
+  const fixture = assistantFixture({
+    user: { id: 'guest', is_anonymous: true },
+    secrets: { GEMINI_API_KEY: 'secret', GEMINI_MODEL: 'test-model' },
+    fetchImpl: async (_url, options) => {
+      const payload = JSON.parse(options.body)
+      const sources = JSON.parse(payload.contents[0].parts[0].text)
+      assert.deepEqual(Object.keys(sources).sort(), ['offers', 'query', 'web'])
+      return Response.json({ candidates: [{ content: { parts: [{ text: 'O1 ofrece cajas.' }] } }] })
+    },
+  })
+  const response = await fixture.request({ query: 'cajas', ai: true })
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).summary, 'O1 ofrece cajas.')
+  assert.ok(fixture.calls.some(call => call.name === 'consume_assistant_quota'))
+  const limited = assistantFixture({ user: { id: 'guest', is_anonymous: true }, secrets: { GEMINI_API_KEY: 'secret', GEMINI_MODEL: 'test-model' }, quota: false })
+  assert.equal((await limited.request({ query: 'cajas', ai: true })).status, 429)
 })

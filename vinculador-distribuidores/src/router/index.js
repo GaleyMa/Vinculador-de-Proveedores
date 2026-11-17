@@ -30,7 +30,7 @@ const router = createRouter({
       path: '/register',
       component: Register,
     },
-    { path: '/asistente', name: 'assistant', component: () => import('@/pages/Assistant.vue') },
+    { path: '/asistente', name: 'assistant', meta: { guestOk: true }, component: () => import('@/pages/Assistant.vue') },
     {
       path: '/publicar',
       component: CreatePost,

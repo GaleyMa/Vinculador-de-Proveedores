@@ -1,7 +1,7 @@
 <template>
   <v-container class="assistant-page" max-width="1040">
     <p class="eyebrow">BÚSQUEDA CON AYUDA</p><h1 class="page-title mb-2">Asistente de proveedores</h1>
-    <p class="mb-4">Cuéntanos qué necesitas. Buscaremos ofertas y, si lo eliges, opciones fuera de SunFinder.</p>
+    <p class="mb-4">Busca con IA sin usar preferencias ni historial del perfil. Si lo eliges, también consultaremos opciones de la web.</p>
 
     <v-form class="assistant-form" :disabled="loading" @submit.prevent="search">
       <v-text-field
@@ -49,17 +49,19 @@
   </v-container>
 </template>
 <script setup>
-  import { onBeforeUnmount, ref } from 'vue'
+  import { onBeforeUnmount, onMounted, ref } from 'vue'
   import OfferFilters from '@/components/OfferFilters.vue'
   import PostCard from '@/components/PostCard.vue'
   import WebResultCard from '@/components/WebResultCard.vue'
   import { candidateOffers } from '@/lib/offers'
   import { supabase } from '@/lib/supabase'
-  const query = ref(''), nature = ref(null), sectorId = ref(null)
-  const useAI = ref(false), useWeb = ref(false), loading = ref(false), searched = ref(false), webRequested = ref(false)
+  const props = defineProps({ initialQuery: { type: String, default: '' }, autoSearch: Boolean })
+  const query = ref(props.initialQuery), nature = ref(null), sectorId = ref(null)
+  const useAI = ref(true), useWeb = ref(false), loading = ref(false), searched = ref(false), webRequested = ref(false)
   const offers = ref([]), web = ref([]), warnings = ref([]), summary = ref(''), error = ref('')
   let version = 0
   onBeforeUnmount(() => { version++ })
+  onMounted(() => { if (props.autoSearch && query.value.trim().length >= 3) search() })
   async function search() {
     if (loading.value) return
     error.value = ''
