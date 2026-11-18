@@ -1,7 +1,8 @@
 <template>
   <v-container max-width="600">
     <v-card class="pa-6">
-      <v-card-title>{{ isOffer ? 'Nueva oferta' : 'Nueva publicación' }}</v-card-title>
+      <v-card-title>Publicar oferta</v-card-title>
+      <p class="text-body-2 text-muted mb-4">Presenta los productos o servicios que ofrece tu empresa.</p>
 
       <v-form :disabled="uploading || published" @submit.prevent="submit">
         <v-text-field v-model="title" counter="160" label="Título" maxlength="160" />
@@ -42,7 +43,7 @@
           :disabled="published"
           :loading="uploading"
           type="submit"
-        >Publicar</v-btn>
+        >Publicar oferta</v-btn>
       </v-form>
     </v-card>
   </v-container>
