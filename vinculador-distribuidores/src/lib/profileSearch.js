@@ -9,6 +9,18 @@ const MISSING_FEATURE = new Set(['42P01', 'PGRST200', 'PGRST205'])
 export async function searchProfiles(client, { text = '', tag = '', page = 1, pageSize = PROFILES_PAGE_SIZE, signal } = {}) {
   text = searchParam(text)
   tag = searchParam(tag)
+  if (text) {
+    let request = client.rpc('search_profiles_flexible', {
+      p_query: text, p_tag: tag || null, p_limit: pageSize, p_offset: (page - 1) * pageSize,
+    })
+    if (signal) {request = request.abortSignal(signal)}
+    const result = await request
+    if (!result.error) {
+      return { profiles: result.data ?? [], total: Number(result.data?.[0]?.total_count ?? 0) }
+    }
+    // Compatibilidad mientras se aplica la nueva migración; otros errores no se ocultan.
+    if (!['PGRST202', '42883'].includes(result.error.code)) {throw result.error}
+  }
   const baseColumns = ['id', 'full_name', 'role', 'avatar_url', 'bio', 'profile_tags(tags(id, name))']
   if (text) {
     baseColumns.push('matching_tags:profile_tags(tags!inner(name))')
