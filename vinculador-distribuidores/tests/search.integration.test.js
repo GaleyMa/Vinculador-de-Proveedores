@@ -41,8 +41,19 @@ test('Búsquedas de perfiles y publicaciones en Supabase', async t => {
           && (!text || [profile.full_name, ...tags.map(item => item.name)].some(value => value?.toLowerCase().includes(text)))
       })
       const actual = await searchProfiles(client, { ...options, pageSize: 100 })
-      assert.deepEqual(actual.profiles.map(profile => profile.id), expected.map(profile => profile.id))
-      assert.equal(actual.total, expected.length)
+      const actualIds = actual.profiles.map(profile => profile.id)
+      if (text) {
+        // La búsqueda flexible conserva coincidencias exactas y permite otras similares.
+        for (const profile of expected) { assert.ok(actualIds.includes(profile.id)) }
+        assert.equal(new Set(actualIds).size, actualIds.length)
+        assert.equal(actual.total, actualIds.length)
+        if (tag) for (const profile of actual.profiles) {
+          assert.ok(tagsOf(profile, 'profile_tags').some(item => item.name === tag))
+        }
+      } else {
+        assert.deepEqual(actualIds, expected.map(profile => profile.id))
+        assert.equal(actual.total, expected.length)
+      }
       for (const profile of actual.profiles) {
         const original = profiles.find(item => item.id === profile.id)
         assert.deepEqual(tagsOf(profile, 'profile_tags').map(tag => tag.id).toSorted(), tagsOf(original, 'profile_tags').map(tag => tag.id).toSorted())
