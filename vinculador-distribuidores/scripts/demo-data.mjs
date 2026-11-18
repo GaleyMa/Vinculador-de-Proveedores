@@ -26,9 +26,9 @@ const catalog = [
 const needs = {
  cafe:['Cajas de cartón para pedidos de cafetería','bien','empaque','Buscamos cajas de cartón reciclable para enviar pan y café. Requerimos impresión de logotipo y entrega en Tijuana.',3000,8000],
  restaurante:['Abastecimiento de panadería para restaurante','bien','alimentos','Buscamos pan fresco por mayoreo con reparto regular y cotización para 400 piezas semanales.',4000,9000],
- fabrica:['Mantenimiento de maquinaria de producción','servicio','mantenimiento','Necesitamos revisión preventiva de tres máquinas, diagnóstico eléctrico y reporte de recomendaciones.',5000,15000],
- tienda:['Software para control de inventarios','servicio','tecnologia','Requerimos sistema web para inventario, ventas y reportes con capacitación al personal.',20000,40000],
- obra:['Cemento y materiales para remodelación','bien','construccion','Solicitamos cotización de cemento y materiales con entrega programada para una obra comercial.',10000,30000],
+ fabrica:['Mantenimiento de maquinaria de producción','servicio','mantenimiento','Necesitamos revisión preventiva de tres máquinas, diagnóstico eléctrico y reporte de recomendaciones.',5000,15_000],
+ tienda:['Software para control de inventarios','servicio','tecnologia','Requerimos sistema web para inventario, ventas y reportes con capacitación al personal.',20_000,40_000],
+ obra:['Cemento y materiales para remodelación','bien','construccion','Solicitamos cotización de cemento y materiales con entrega programada para una obra comercial.',10_000,30_000],
 }
 export function demoId(value) {
  const hex=createHash('sha256').update(`${DEMO_MARKER}:${value}`).digest('hex')
@@ -53,7 +53,7 @@ export function demoAccounts() {
   links:[{label:'Sitio de demostración (ficticio)',url:`https://${slug}.${DEMO_DOMAIN}`}],
   posts:role==='cliente'?[]:[
    {title:`[DEMO] ${title}`,description:`${description} Información ficticia para demostración.`,nature:nature==='ambos'?'bien':nature,sector_id:sector},
-   {title:`[DEMO] ${role==='socio'?'Asesoría e integración':nature==='bien'?'Suministro recurrente':'Plan de atención'}: ${tags[0]}`,description:`${role==='socio'?'Servicio de asesoría e integración relacionado con '+tags.join(', ')+'.':description} ${role==='socio'?'Sesión inicial desde 1500 MXN y propuesta en 3 días hábiles.':'Plan mensual con cotización según volumen y seguimiento de pedidos.'} Información ficticia para demostración.`,nature:role==='socio'?'servicio':nature,sector_id:sector},
+   {title:`[DEMO] ${role==='socio'?'Asesoría e integración':(nature==='bien'?'Suministro recurrente':'Plan de atención')}: ${tags[0]}`,description:`${role==='socio'?'Servicio de asesoría e integración relacionado con '+tags.join(', ')+'.':description} ${role==='socio'?'Sesión inicial desde 1500 MXN y propuesta en 3 días hábiles.':'Plan mensual con cotización según volumen y seguimiento de pedidos.'} Información ficticia para demostración.`,nature:role==='socio'?'servicio':nature,sector_id:sector},
   ],
   need:needs[slug] ? {
    title:`[DEMO] ${needs[slug][0]}`,nature:needs[slug][1],sector_id:needs[slug][2],description:needs[slug][3]+' Solicitud ficticia para demostración.',
