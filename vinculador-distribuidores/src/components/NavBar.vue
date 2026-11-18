@@ -23,7 +23,7 @@
     </nav>
 
     <v-spacer />
-    <v-btn v-if="authStore.user && !authStore.isGuest && mdAndUp" class="mr-2" prepend-icon="mdi-plus" to="/publicar">Publicar</v-btn>
+    <v-btn v-if="authStore.user && !authStore.isGuest && mdAndUp" class="mr-2" prepend-icon="mdi-plus" to="/publicar">Publicar oferta</v-btn>
 
     <v-btn v-if="!authStore.user || authStore.isGuest" class="mr-2" to="/register">Crear cuenta</v-btn>
 
@@ -56,7 +56,7 @@
         <v-list-item :subtitle="roleLabel" :title="authStore.profile?.full_name || 'Mi cuenta'" />
         <v-divider />
         <v-list-item prepend-icon="mdi-compass-outline" title="Para tu empresa" to="/feed" />
-        <v-list-item prepend-icon="mdi-plus-circle-outline" title="Publicar" to="/publicar" />
+        <v-list-item prepend-icon="mdi-plus-circle-outline" title="Publicar oferta" to="/publicar" />
         <v-list-item prepend-icon="mdi-office-building-outline" title="Mi empresa" to="/perfil" />
         <v-list-item prepend-icon="mdi-logout" title="Cerrar sesión" @click="logout" />
       </v-list>
@@ -109,7 +109,7 @@
     { label: 'Empresas', icon: 'mdi-domain', to: '/perfiles', match: p => p === '/perfiles' || p.startsWith('/usuario/') },
     { label: 'Necesidades', icon: 'mdi-clipboard-text-outline', to: '/necesidades', match: p => p.startsWith('/necesidades') },
     { label: 'Asistente', icon: 'mdi-creation', to: '/asistente', match: p => p === '/asistente' },
-    { label: 'Publicar', icon: 'mdi-plus-circle-outline', to: '/publicar', match: p => p === '/publicar' },
+    { label: 'Publicar oferta', icon: 'mdi-plus-circle-outline', to: '/publicar', match: p => p === '/publicar' },
     { label: 'Mi empresa', icon: 'mdi-office-building-outline', to: '/perfil', match: p => p === '/perfil' },
   ]
 

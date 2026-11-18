@@ -33,7 +33,7 @@ test('Pantallas Vue y sesiones: clasificación, fuentes y recuperación de acces
       for (const role of ['proveedor','socio']) {
         const {pinia} = setup(role)
         const html = await render(CreatePost,{},pinia)
-        assert.match(html,/Nueva oferta/)
+        assert.match(html,/Publicar oferta/)
         assert.match(html,/Naturaleza de la oferta/)
         assert.match(html,/Rubro de la oferta/)
       }

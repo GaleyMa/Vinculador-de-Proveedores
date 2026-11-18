@@ -1,6 +1,7 @@
 <template>
   <v-container max-width="800">
-    <h1 class="text-h5 mb-4">{{ id ? 'Editar necesidad' : 'Nueva necesidad' }}</h1>
+    <h1 class="text-h5 mb-4">{{ id ? 'Editar necesidad' : 'Publicar necesidad' }}</h1>
+    <p v-if="!id" class="text-body-2 text-muted mb-4">Describe el producto o servicio que tu empresa está buscando.</p>
     <v-progress-linear v-if="loading" aria-label="Cargando formulario" indeterminate />
 
     <v-alert v-else-if="loadError" type="error" variant="tonal">
